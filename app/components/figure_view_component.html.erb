@@ -1,0 +1,59 @@
+<svg viewBox='<%= "0 0 #{@image.width} #{@image.height}" %>'>
+  <image width='<%= @image.width %>' height='<%= @image.height %>' href='<%= @image.url %>' />
+
+  <% @figures.each do |figure| %>
+    <% if figure.is_a?(Spine) %>
+
+    <% elsif figure.manual_bounding_box %>
+      <polyline
+          points='<%= manual_contour_path(figure.manual_contour) %>'
+          fill='#3F51B5'
+          stroke='#3F51B5'
+          strokeWidth='5'
+          opacity='.5'
+        />
+        <text
+          x='<%= figure.x1 %>'
+          y='<%= figure.y1 %>'
+          style='font-size: 36px;'
+          color="#3F51B5"
+          >
+          <%= figure.type %> <%= figure.id %>
+        </text>
+    <% else %>
+      <% if @contours && ['Grave', 'Arrow', 'GraveCrossSection', 'Scale'].include?(figure.class.to_s) %>
+        <polyline
+          points='<%= contour_path(figure, figure.contour) %>'
+          fill='#3F51B5'
+          stroke='#3F51B5'
+          strokeWidth='5'
+          opacity='.5'
+        />
+        <text
+          x='<%= figure.x1 %>'
+          y='<%= figure.y1 %>'
+          style='font-size: 36px;'
+          >
+          <%= figure.type %> <%= figure.id %>
+        </text>
+      <% else %>
+        <rect
+          fill='none'
+          stroke="red"
+          strokeWidth="2"
+          x='<%= figure.x1 %>'
+          y='<%= figure.y1 %>'
+          width='<%= figure.x2 - figure.x1 %>'
+          height='<%= figure.y2 - figure.y1 %>'
+        />
+        <text
+          x='<%= figure.x1 %>'
+          y='<%= figure.y1 %>'
+          style='font-size: 36px;'
+          >
+          <%= figure.type %> <%= figure.id %>
+        </text>
+      <% end %>
+    <% end %>
+  <% end %>
+</svg>

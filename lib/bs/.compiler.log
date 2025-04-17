@@ -1,0 +1,35 @@
+#Start(1724149724376)
+
+  Warning number 33
+  /home/kevin/dfg/app/javascript/components/ManualContour.res:1:1-18
+
+  1 │ open Webapi.Canvas
+  2 │ open Js.Array
+  3 │ open Konva
+
+  unused open Webapi.Canvas.
+
+
+  Warning number 33
+  /home/kevin/dfg/app/javascript/components/ManualContour.res:2:1-13
+
+  1 │ open Webapi.Canvas
+  2 │ open Js.Array
+  3 │ open Konva
+  4 │ open AutArch
+
+  unused open Js.Array.
+
+
+  Warning number 27
+  /home/kevin/dfg/app/javascript/components/ManualContour.res:19:13-19
+
+  17 │ 
+  18 │ @react.component
+  19 │ let make = (~active, ~figure: figure, ~onChangeFigure) => {
+  20 │   let anchors = [
+  21 │     {x: figure.anchor_point_1_x, y: figure.anchor_point_1_y, id: 1},
+
+  unused variable active.
+
+#Done(1724149724403)

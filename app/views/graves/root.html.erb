@@ -1,0 +1,75 @@
+<style>
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+  }
+  div[data-react-class='SiteMap'] {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+
+<header class="mb-10">
+  <!-- Section: Split screen -->
+  <section class="">
+
+    <div class="container-fluid px-0">
+      <div class="row g-0">
+        <!-- First column -->
+        <div class="col-md-6">
+          <div class='mx-3'>
+            <h2 class="display-4">AutArch</h2>
+              <p class="lead">
+                This software was developed within the framework of the DFG-funded project
+                "CO-MOVE - Cultures on the move? New approaches to the archaeology and genetics
+                of the Yamnaya to Corded Ware burial transition"
+              </p>
+              <figcaption class="blockquote-footer">
+                <a href='https://gepris.dfg.de/gepris/projekt/466680522?language=en'>(Grant n° 466680522)</a>
+              </figcaption>
+
+              <br />
+                Conceptualization: Kevin Klein, Maxime N. Brami
+              <br />
+                Software development: Kevin Klein
+              <br />
+                AutArch team: Kevin Klein, Antoine Muller, Alyssa Wohde, Alexander V. Gorelik, Volker Heyd, Ralf Lämmel, Yoan Diekmann, Maxime N. Brami
+              <br>
+
+              The AutArch preprint is available on ArXiv: <a href='https://arxiv.org/abs/2311.17978'>https://arxiv.org/abs/2311.17978</a>
+
+              <h3 class='mt-4'>Workflow</h3>
+
+              <p>
+                Publications can be imported under <a href="<%= new_publication_path %>">Publications -> Import or Upload Publication in the header</a>
+              </p>
+
+              <p>
+                After the import has completed, the publication is available under <a href="<%= publications_path %>">Publications</a>. It is recommended to go to the Annotations Screen under <a href="<%= publications_path %>">Publications</a> -> pages and add all <abbr title="objects missed by the object detection">false negative objects</abbr>.
+              </p>
+
+              <p>
+                To review all the graves, go to the <a href="<%= graves_path %>">grave screen</a>. Use the filter on the top to select the publications just uploaded. Then click the edit button of the first grave on the list.
+              </p>
+          </div>
+        </div>
+        <div class="col-md-6 vh-100">
+          <%= react_component("EuropeMap", props: { orientations: @skeleton_angles }) %>
+        </div>
+      </div>
+    </div>
+
+  </section>
+  <!-- Section: Split screen -->
+</header>
+<!--Main Navigation--> <!--Main layout-->
+<main>
+  <div class="container">
+
+  </div>
+</main>
+<!--Main layout--> <!--Footer-->
+<footer>
+
+</footer>
+<!--Footer-->
