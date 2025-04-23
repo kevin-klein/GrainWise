@@ -5,7 +5,6 @@ import React from 'react'
 import 'chartkick/chart.js'
 import bootstrap from 'bootstrap'
 
-import BoxResizer from '../components/BoxResizer'
 import AddFigures from '../components/AddFigures'
 import NorthArrow from '../components/NorthArrow'
 import EuropeMap from '../components/EuropeMap'
@@ -13,6 +12,7 @@ import ImportProgress from '../components/ImportProgress'
 import SiteMap from '../components/SiteMap'
 import Chart from 'react-apexcharts'
 import simpleheat from '../components/simpleheat'
+import GrainsList from '../components/GrainsList'
 // import h337 from 'heatmap.js'
 
 import ReactOnRails from 'react-on-rails'
@@ -119,12 +119,12 @@ function ScatterChart ({ data, colors }) {
 
 ChartJS.register(Filler, LineElement, PointElement, ArcElement, Tooltip, Legend, RadialLinearScale)
 ReactOnRails.register({
-  BoxResizer,
   ImportProgress,
   AddFigures,
   ScatterChart,
   NorthArrow,
   Heatmap,
+  GrainsList,
   SiteMap: function (props, railsContext) {
     return () => <SiteMap {...props} />
   },

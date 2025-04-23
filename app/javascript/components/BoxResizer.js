@@ -170,7 +170,7 @@ function NewFigureDialog ({ closeDialog, addFigure }) {
   )
 }
 
-function Canvas ({ divRef, image, figures, onDraggingStart, currentEditBox, setCurrentEditBox, onChangeFigure }) {
+function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBox, setCurrentEditBox, onChangeFigure }) {
   const [dimensions, setDimensions] = React.useState({
     width: 0,
     height: 0
@@ -224,62 +224,34 @@ function Canvas ({ divRef, image, figures, onDraggingStart, currentEditBox, setC
           x={0}
           y={0}
         />
+        <Line
+          x={0}
+          y={0}
+          points={grain.contour.flat()}
+          closed
+          fill='#3F51B588'
+          stroke='black'
+        />
         {Object.values(figures).map(figure => <Box onChangeFigure={onChangeFigure} canvas={null} key={figure.id} onDraggingStart={onDraggingStart} setActive={setCurrentEditBox} active={currentEditBox} figure={figure} />)}
       </Layer>
     </Stage>
   )
 }
 
-function BoxResizer ({ next_url, grave, sites, image, page }) {
+export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFigure, sites, image, page }) {
   const { figures, updateFigure, setFigures, addFigure, removeFigure } = useFigureStore()
 
   const [rendering, setRendering] = React.useState('boxes')
   const [draggingState, setDraggingState] = React.useState(null)
   const [creatingNewFigure, setCreatingNewFigure] = React.useState(false)
-  const [currentEditBox, setCurrentEditBox] = React.useState(grave.figures.filter((f) => f.type == 'Grave')[0]?.id)
-  // const graveFigure = figures.filter(figure => figure.id === grave.id)[0];
 
   const divRef = React.useRef(null)
-
-  React.useEffect(() => {
-    setFigures(grave.figures.map(figure => {
-      if (figure.control_point_1_x === null) {
-        const controlPoints = calculateControlPoints(figure)
-
-        return {
-          typeName: figure.type,
-          ...figure,
-          control_point_1_x: controlPoints[0].x,
-          control_point_1_y: controlPoints[0].y,
-          control_point_2_x: controlPoints[1].x,
-          control_point_2_y: controlPoints[1].y,
-          control_point_3_x: controlPoints[2].x,
-          control_point_3_y: controlPoints[2].y,
-          control_point_4_x: controlPoints[3].x,
-          control_point_4_y: controlPoints[3].y,
-          anchor_point_1_x: figure.x1,
-          anchor_point_1_y: figure.y1,
-          anchor_point_2_x: figure.x2,
-          anchor_point_2_y: figure.y1,
-          anchor_point_3_x: figure.x2,
-          anchor_point_3_y: figure.y2,
-          anchor_point_4_x: figure.x1,
-          anchor_point_4_y: figure.y2
-        }
-      } else {
-        return {
-          typeName: figure.type,
-          ...figure
-        }
-      }
-    }))
-  }, [])
 
   const token =
       document.querySelector('[name=csrf-token]').content
 
   function currentEditBoxActiveClass (figure) {
-    if (figure.id === currentEditBox) {
+    if (figure.id === currentFigure) {
       return ' active'
     }
   }
@@ -455,43 +427,19 @@ function BoxResizer ({ next_url, grave, sites, image, page }) {
     }
   }
 
-  const validations = ['Scale', 'Arrow', 'Spine', 'SkeletonFigure', 'GraveCrossSection'].map((item) => {
-    const matchingFigure = Object.values(figures).filter(fig => fig.typeName === item)[0]
-    if (matchingFigure === undefined) {
-      if (item === 'SkeletonFigure' || item === 'Spine') {
-        return (
-          <li key={item} className='list-group-item alert-warning'>{item} is missing</li>
-        )
-      } else {
-        return (
-          <li key={item} className='list-group-item alert-danger'>{item} is missing</li>
-        )
-      }
-    }
-  })
-
   return (
     <>
       {creatingNewFigure && <NewFigureDialog addFigure={createFigure} closeDialog={() => setCreatingNewFigure(false)} />}
       <div className='row'>
         <div className='col-md-8 card' ref={divRef}>
-          <div className='form-check'>
-            <div className='btn-group' role='group' aria-label='Basic example'>
-              <button type='button' style={{ backgroundColor: '#F44336' }} className='btn btn-secondary' onClick={() => createFigure('Spine')}>Spine</button>
-              <button type='button' style={{ backgroundColor: '#9575CD' }} className='btn btn-secondary' onClick={() => createFigure('SkeletonFigure')}>Skeleton</button>
-              <button type='button' style={{ backgroundColor: '#009688' }} className='btn btn-secondary' onClick={() => createFigure('Arrow')}>Arrow</button>
-              <button type='button' style={{ backgroundColor: '#26C6DA' }} className='btn btn-secondary' onClick={() => createFigure('GraveCrossSection')}>GraveCrossSection</button>
-              <button type='button' style={{ backgroundColor: '#4CAF50' }} className='btn btn-secondary' onClick={() => createFigure('Good')}>Artefact</button>
-              <button type='button' style={{ backgroundColor: '#FF9800' }} className='btn btn-secondary' onClick={() => createFigure('Scale')}>Scale</button>
-            </div>
-          </div>
           <Canvas
-            setCurrentEditBox={setCurrentEditBox}
+            grain={grain}
+            setCurrentEditBox={setCurrentFigure}
             divRef={divRef}
             image={image}
-            figures={figures}
+            figures={[scale]}
             onDraggingStart={onDraggingStart}
-            currentEditBox={currentEditBox}
+            currentEditBox={currentFigure}
             onChangeFigure={onChangeFigure}
           />
         </div>
@@ -499,105 +447,83 @@ function BoxResizer ({ next_url, grave, sites, image, page }) {
         <div className='col-md-4'>
           <div style={{ position: 'sticky', top: 60 }} className='card'>
             <div className='card-body'>
-              <h5 className='card-title'>Edit Grave</h5>
+              <h5 className='card-title'>Edit Grain Photograph</h5>
               <div className='card-text'>
                 <ul className='list-group'>
-                  {Object.values(figures).map(figure =>
-                  <React.Fragment key={figure.id}>
-                    <div
-                      onClick={() => { setCurrentEditBox(figure.id) }}
-                      className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(figure)}`}
-                    >
-                      <div className='ms-2 me-auto'>
-                        <div className='fw-bold'>{figure.typeName === 'Good' ? 'Artefact' : figure.typeName}</div>
-                      </div>
-                      <div
-                        onClick={() => { removeEditBox(figure.id) }}
-                        className='btn btn-primary badge bg-primary rounded-pill'
-                        role='button' data-bs-toggle='button'
-                      >
-                        X
-                      </div>
+                  <div
+                    onClick={() => { setCurrentEditBox(figure.id) }}
+                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
+                  >
+                    <div className='ms-2 me-auto'>
+                      <div className='fw-bold'>Scale</div>
                     </div>
-                    {currentEditBox === figure.id && (figure.typeName === 'Grave' || figure.typeName === 'GraveCrossSection') &&
-                      <div className='row mb-3 mt-3'>
-                        <div className='form-check ms-3'>
-                          <input
-                            className='form-check-input'
-                            type='checkbox'
-                            checked={figure.manual_bounding_box}
-                            onChange={(evt) => { setManualBoundingBox(figure, evt.target.checked) }}
-                          />
-                          <label className='form-check-label'>
-                            manual bounding box
-                          </label>
-                        </div>
-                      </div>}
-                  </React.Fragment>
-                )}
-
-                  <a
-                  href='#'
-                  onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
-                  className='list-group-item list-group-item-action d-flex justify-content-between align-items-start'
-                >
-                  <div className='ms-2 me-auto'>
-                    <div className='fw-bold'>New Figure</div>
+                    <div
+                      onClick={() => { removeEditBox(figure.id) }}
+                      className='btn btn-primary badge bg-primary rounded-pill'
+                      role='button' data-bs-toggle='button'
+                    >
+                      X
+                    </div>
                   </div>
-                </a>
+                  <div className='row mb-3 mt-3'>
+                    <div className='form-check ms-3'>
+                      <input
+                        className='form-check-input'
+                        type='checkbox'
+                        checked={scale.manual_bounding_box}
+                        onChange={(evt) => { setManualBoundingBox(scale, evt.target.checked) }}
+                      />
+                      <label className='form-check-label'>
+                        manual bounding box
+                      </label>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => { setCurrentEditBox(figure.id) }}
+                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
+                  >
+                    <div className='ms-2 me-auto'>
+                      <div className='fw-bold'>Grain {grain.identifier}</div>
+                    </div>
+                    <div
+                      onClick={() => { removeEditBox(figure.id) }}
+                      className='btn btn-primary badge bg-primary rounded-pill'
+                      role='button' data-bs-toggle='button'
+                    >
+                      X
+                    </div>
+                  </div>
+                  <div className='row mb-3 mt-3'>
+                    <div className='form-check ms-3'>
+                      <input
+                        className='form-check-input'
+                        type='checkbox'
+                        checked={scale.manual_bounding_box}
+                        onChange={(evt) => { setManualBoundingBox(scale, evt.target.checked) }}
+                      />
+                      <label className='form-check-label'>
+                        manual bounding box
+                      </label>
+                    </div>
+                  </div>
+                  <a
+                    href='#'
+                    onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
+                    className='list-group-item list-group-item-action d-flex justify-content-between align-items-start'
+                  >
+                    <div className='ms-2 me-auto'>
+                      <div className='fw-bold'>New Figure</div>
+                    </div>
+                  </a>
                 </ul>
               </div>
-              <form action={next_url} method='post'>
+              <form method='post'>
                 <input type='hidden' name='_method' value='patch' />
                 <input type='hidden' name='authenticity_token' value={token} />
-                {Object.values(figures).map(figure => {
-                  const id = figure.id
-                  return (
-                  <React.Fragment key={figure.id}>
-                    <input type='hidden' name={`figures[${id}][x1]`} value={figure.x1} />
-                    <input type='hidden' name={`figures[${id}][x2]`} value={figure.x2} />
-                    <input type='hidden' name={`figures[${id}][y1]`} value={figure.y1} />
-                    <input type='hidden' name={`figures[${id}][y2]`} value={figure.y2} />
-                    <input type='hidden' name={`figures[${id}][verified]`} value={figure.verified} />
-                    <input type='hidden' name={`figures[${id}][disturbed]`} value={figure.disturbed} />
-                    <input type='hidden' name={`figures[${id}][deposition_type]`} value={figure.deposition_type} />
-                    <input type='hidden' name={`figures[${id}][publication_id]`} value={figure.publication_id} />
-                    <input type='hidden' name={`figures[${id}][text]`} value={figure.text} />
-                    <input type='hidden' name={`figures[${id}][angle]`} value={figure.angle} />
-                    {figure.manual_bounding_box && <>
-                      <input type='hidden' name={`figures[${id}][control_point_1_x]`} value={figure.control_point_1_x} />
-                      <input type='hidden' name={`figures[${id}][control_point_2_x]`} value={figure.control_point_2_x} />
-                      <input type='hidden' name={`figures[${id}][control_point_3_x]`} value={figure.control_point_3_x} />
-                      <input type='hidden' name={`figures[${id}][control_point_4_x]`} value={figure.control_point_4_x} />
-
-                      <input type='hidden' name={`figures[${id}][control_point_1_y]`} value={figure.control_point_1_y} />
-                      <input type='hidden' name={`figures[${id}][control_point_2_y]`} value={figure.control_point_2_y} />
-                      <input type='hidden' name={`figures[${id}][control_point_3_y]`} value={figure.control_point_3_y} />
-                      <input type='hidden' name={`figures[${id}][control_point_4_y]`} value={figure.control_point_4_y} />
-
-                      <input type='hidden' name={`figures[${id}][anchor_point_1_x]`} value={figure.anchor_point_1_x} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_2_x]`} value={figure.anchor_point_2_x} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_3_x]`} value={figure.anchor_point_3_x} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_4_x]`} value={figure.anchor_point_4_x} />
-
-                      <input type='hidden' name={`figures[${id}][anchor_point_1_y]`} value={figure.anchor_point_1_y} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_2_y]`} value={figure.anchor_point_2_y} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_3_y]`} value={figure.anchor_point_3_y} />
-                      <input type='hidden' name={`figures[${id}][anchor_point_4_y]`} value={figure.anchor_point_4_y} />
-
-                      <input type='hidden' name={`figures[${id}][manual_bounding_box]`} value={figure.manual_bounding_box} />
-                    </>}
-                  </React.Fragment>
-                  )
-                })}
 
                 <input value='Next' type='submit' className='btn btn-primary card-link mt-1' />
               </form>
-
-              <ul className='list-group mt-3'>
-                {validations}
-              </ul>
-
             </div>
           </div>
         </div>
@@ -607,6 +533,6 @@ function BoxResizer ({ next_url, grave, sites, image, page }) {
   )
 }
 
-export default function (props, railsContext) {
-  return () => <BoxResizer {...props} />
-}
+// export default function (props, railsContext) {
+//   return () => <BoxResizer {...props} />
+// }

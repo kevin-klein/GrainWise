@@ -11,5 +11,5 @@
 class UploadItem < ApplicationRecord
   belongs_to :upload
   belongs_to :image, dependent: :destroy
-  has_many :figures, inverse_of: :page, dependent: :destroy
+  has_many :figures, inverse_of: :upload_item, dependent: :destroy
 end

@@ -16,7 +16,7 @@ device = "cuda"
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
 
-labels = torch.load('models/rcnn_labels.model', weights_only=True)
+labels = torch.load('models/retinanet_v2_labels.model')
 labels = {v: k for k, v in labels.items()}
 
 if torch.cuda.is_available():
@@ -25,7 +25,7 @@ else:
     device = torch.device('cpu')
 
 loaded_model = get_model(num_classes = len(labels.keys()), device=device)
-loaded_model.load_state_dict(torch.load('models/rcnn_grain_wise.model', map_location=device, weights_only=True))
+loaded_model.load_state_dict(torch.load('models/retinanet_v2_dfg.model', map_location=device))
 
 loaded_model.eval()
 
@@ -50,13 +50,14 @@ def analyze_file(file):
 
             label = labels[prediction[0]['labels'][element].cpu().item()]
 
-            if score > 0.1:
+            if score > 0.1 and label == 'scale':
                 result.append({
                     'score': score.tolist(),
                     'box': boxes,
                     'label': label
                 })
     del img
+    print(result)
     return result
 
 @app.post('/')
@@ -69,7 +70,7 @@ def upload():
 @app.post('/segment')
 def upload_skeleton_angle():
     upload_file = request.POST['image']
-    request_object_content = upload_file.read()
+    request_object_content = upload_file.file.read()
     pil_image = Image.open(io.BytesIO(request_object_content))
     open_cv_image = np.array(pil_image)
 
@@ -91,11 +92,17 @@ def upload_skeleton_angle():
     mask = masks[max_score_index]
     score = scores[max_score_index]
 
+    h, w = mask.shape[-2:]
+    mask = mask.reshape(h, w)
+
+    mask = mask.astype(dtype='uint8')
+    mask *= 255
+
     contours, _  = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     return { 'predictions': {
-        'score': score,
-        'contour': contours[0]
+        'score': score.item(),
+        'contour': contours[0].astype(int).tolist()
     } }
 
 if __name__ == '__main__':

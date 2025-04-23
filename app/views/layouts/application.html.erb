@@ -42,10 +42,13 @@
               <a class="nav-link" href="/graves">Graves</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/publications">Publications</a>
+              <%= link_to('Uploads', uploads_path, class: 'nav-link') %>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/sites">Sites</a>
+              <%= link_to('Sites', sites_path, class: 'nav-link') %>
+            </li>
+            <li class="nav-item">
+              <%= link_to('Species', strains_path, class: 'nav-link') %>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/maps">Map</a>

@@ -577,6 +577,7 @@ DEPENDENCIES
   ruby-lsp
   ruby-progressbar (~> 1.13)
   ruby-vips
+  rubyzip
   rumale
   rwordnet (~> 2.0)
   selenium-webdriver

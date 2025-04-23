@@ -6,9 +6,9 @@ module UnitAccessor
   module ClassMethods
     def with_unit(name, square: false)
       define_method(:"#{name}_with_unit") do
-        if scale.present? && scale.meter_ratio&.positive?
-          ratio = scale.meter_ratio
-          ratio = scale.meter_ratio**2 if square
+        if scale.present? && scale.milli_meter_ratio&.positive?
+          ratio = scale.milli_meter_ratio
+          ratio = scale.milli_meter_ratio**2 if square
           return {value: 0, unit: "px"} if send(name).nil?
           return {value: send(name), unit: "px"} if ratio.nil?
           {value: send(name) * ratio, unit: value_unit(square)}
@@ -36,9 +36,9 @@ module UnitAccessor
 
   def value_unit(square)
     if square
-      "&#13217;"
+      "mm&sup2;"
     else
-      "m"
+      "mm"
     end
   end
 end

@@ -10,7 +10,10 @@ class FigureViewComponent < ViewComponent::Base
 
   def contour_path(figure, contour)
     (contour + [contour[0]]).map do |point|
-      "#{point[0] + figure.x1},#{point[1] + figure.y1}"
+      if point[0].is_a?(Array)
+        point = point[0]
+      end
+      "#{point[0] + (figure.x1 || 0)},#{point[1] + (figure.y1 || 0)}"
     end.join(" ")
   end
 

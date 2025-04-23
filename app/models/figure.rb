@@ -55,6 +55,7 @@ class Figure < ApplicationRecord
   include UnitAccessor
   serialize :contour, JSON
   validates :upload, presence: true
+  belongs_to :site, optional: true
 
   enum view: {
     ventral: 0,
@@ -62,8 +63,6 @@ class Figure < ApplicationRecord
   }
 
   has_and_belongs_to_many :tags
-
-  belongs_to :site
 
   def manual_contour
     first = (0..1).step(0.1).map do |t|

@@ -13,7 +13,7 @@ class Image < ApplicationRecord
 
   after_destroy :delete_file
 
-  has_one :page, dependent: :destroy
+  has_one :upload_item, dependent: :destroy
 
   def file_path
     Rails.root.join("images/#{id}.jpg").to_s

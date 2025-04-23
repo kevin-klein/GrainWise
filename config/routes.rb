@@ -1,22 +1,10 @@
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   resources :users
-  resources :periods
-  resources :bones
-  resources :y_haplogroups
-  resources :mt_haplogroups
-  resources :genetics
-  resources :anthropologies
-  resources :cultures
-  resources :taxonomies
+  resources :strains
   resources :tags
-  resources :chronologies do
-    resources :c14_dates
-  end
-  resources :lithics
-  resources :kurgans
   resources :sites
   resources :maps
-  resources :graves do
+  resources :grains do
     resources :update_grave
     collection do
       get :stats
@@ -27,9 +15,6 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     member do
       get :preview
     end
-  end
-  resources :skeletons do
-    resources :stable_isotopes
   end
   resources :page_images
   resources :uploads do
@@ -53,5 +38,5 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   post "/login", to: "user_sessions#code"
   post "/login_code", to: "user_sessions#login_code"
 
-  root "graves#root"
+  root "grains#root"
 end

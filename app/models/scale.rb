@@ -45,10 +45,9 @@
 #  view                 :integer
 #
 class Scale < Figure
-  belongs_to :grave, foreign_key: "parent_id", optional: true, inverse_of: :scale
-  belongs_to :stone_tool, foreign_key: "parent_id", optional: true
+  belongs_to :grain, foreign_key: "parent_id", optional: true, inverse_of: :scale
 
-  before_save do
-    self.meter_ratio = (text.to_i / 100.0) / width if width&.positive? && text.present?
-  end
+  # before_save do
+  #   self.meter_ratio = (text.to_i / 100.0) / width if width&.positive? && text.present?
+  # end
 end

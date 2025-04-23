@@ -45,5 +45,15 @@
 #  view                 :integer
 #
 class Grain < Figure
+  has_one :scale, dependent: :destroy, foreign_key: "parent_id", class_name: "Scale", inverse_of: :grain
 
+  with_unit :area, square: true
+  with_unit :perimeter
+  with_unit :width
+  with_unit :height
+  with_unit :bounding_box_width
+  with_unit :bounding_box_height
+
+  with_unit :normalized_width
+  with_unit :normalized_height
 end

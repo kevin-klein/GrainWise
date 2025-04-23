@@ -32,6 +32,10 @@
 en:
   hello: "Hello world"
 
+  helpers:
+    submit:
+      create: 'Create'
+
   resize_boxes: 'Boxes'
   set_scale: 'Scale'
   set_north_arrow: 'North Arrow'

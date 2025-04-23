@@ -3,8 +3,6 @@ class GraveSize
     Figure.transaction do
       figures ||= Figure.includes({page: :image})
       figures.each do |figure|
-        next if figure.is_a?(Spine)
-
         dispatch_figure(figure)
       end
     end
@@ -13,38 +11,24 @@ class GraveSize
   end
 
   def dispatch_figure(figure)
-    if figure.is_a?(GraveCrossSection)
-      handle_cross_section(figure)
+    if figure.contour.present?
+      stats = contour_stats_only(figure)
+      return if stats.nil?
+      figure.assign_attributes(
+        perimeter: stats[:perimeter],
+        area: stats[:area],
+        width: stats[:width],
+        height: stats[:height]
+      )
+
+      figure.save!
     else
       handle_figure(figure)
     end
   end
 
-  def handle_cross_section(figure)
-    if figure.manual_bounding_box
-      figure.width = figure.bounding_box_width
-      figure.height = figure.bounding_box_height
-    else
-      if figure.contour.nil?
-        image = MinOpenCV.extractFigure(figure, figure.page.image.data)
-        contours = MinOpenCV.findContours(image, "tree")
-        contour = contours.max_by { MinOpenCV.contourArea _1 }
-        return if contour.nil?
-      else
-        contour = figure.contour.flatten
-      end
-      rect = MinOpenCV.boundingRect(contour)
-      return if rect == -1
-
-      figure.contour = contour.map { |x, y| [x, y] }
-      figure.width = rect[:width]
-      figure.height = rect[:height]
-    end
-    figure.save!
-  end
-
   def handle_figure(figure)
-    stats = grave_stats(figure, figure.page.image.data)
+    stats = grave_stats(figure, figure.upload_item.image.data)
     return if stats.nil?
     figure.assign_attributes(
       perimeter: stats[:perimeter],
@@ -53,13 +37,13 @@ class GraveSize
       height: stats[:height],
       contour: stats[:contour].map { |x, y| [x, y] }
     )
-    figure.angle = stats[:angle] if figure.is_a?(Grave)
     figure.save!
   end
 
   def grave_stats(figure, image)
     if figure.manual_bounding_box
       manual_stats(figure, image)
+    elsif figure.contour.present?
     else
       contour_stats(figure, image)
     end
@@ -77,12 +61,19 @@ class GraveSize
     end
   end
 
+  def contour_stats_only(figure)
+    arc = MinOpenCV.arcLength(figure.contour)
+    area = MinOpenCV.contourArea(figure.contour)
+    rect = MinOpenCV.minAreaRect(figure.contour)
+    ap rect
+    {perimeter: arc, area: area, width: rect[:width], height: rect[:height], angle: rect[:angle]}
+  end
+
   def contour_stats(figure, image)
     image = MinOpenCV.extractFigure(figure, image)
-    # image = MinOpenCV.dilate(image, [5, 5])
-    # image = MinOpenCV.erode(image, [19, 19])
     contours = MinOpenCV.findContours(image, "tree")
     contour = contours.max_by { MinOpenCV.contourArea _1 }
+    ap contour
     if contour.nil? || contour.empty?
       {contour: [], perimeter: 0, area: 0, width: 0, height: 0, angle: 0}
     else

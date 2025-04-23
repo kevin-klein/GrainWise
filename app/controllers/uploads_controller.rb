@@ -1,5 +1,5 @@
 class UploadsController < AuthorizedController
-  before_action :set_publication, only: %i[radar update_tags assign_tags update_site assign_site progress summary show edit update destroy stats]
+  before_action :set_upload, only: %i[radar update_tags assign_tags update_site assign_site progress summary show edit update destroy stats]
 
   # GET /publications or /publications.json
   def index
@@ -152,15 +152,16 @@ class UploadsController < AuthorizedController
       name: name,
       site: publication_params[:site],
       strain_id: publication_params[:strain],
-      view: publication_params[:view]
+      view: publication_params[:view],
+      zip: publication_params[:zip]
     })
 
     respond_to do |format|
-      if @publication.save
+      if @upload.save
         AnalyzePublicationJob.perform_later(@upload)
 
         format.html do
-          redirect_to progress_publication_path(@upload)
+          redirect_to progress_upload_path(@upload)
         end
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -197,10 +198,8 @@ class UploadsController < AuthorizedController
   private
 
   # Use callbacks to share common setup or constraints between actions.
-  def set_publication
-    @publication = Publication
-      .select(:title, :author, :id, :year, :user_id, :public)
-      .find(params[:id] || params[:publication_id])
+  def set_upload
+    @upload = Upload.find(params[:id] || params[:upload_id])
   end
 
   def set_compare_graves
@@ -213,6 +212,6 @@ class UploadsController < AuthorizedController
 
   # Only allow a list of trusted parameters through.
   def publication_params
-    params.require(:publication).permit(:zip, :name, :site, :strain, :view)
+    params.require(:upload).permit(:zip, :name, :site, :strain, :view)
   end
 end

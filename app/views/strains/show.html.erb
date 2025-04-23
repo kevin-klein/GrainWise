@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @strain %>
+
+<div>
+  <%= link_to "Edit this strain", edit_strain_path(@strain) %> |
+  <%= link_to "Back to strains", strains_path %>
+
+  <%= button_to "Destroy this strain", @strain, method: :delete %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_04_17_072041) do
+ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -105,16 +105,16 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_072041) do
 
   create_table "figures", force: :cascade do |t|
     t.bigint "upload_item_id", null: false
-    t.integer "x1", null: false
-    t.integer "x2", null: false
-    t.integer "y1", null: false
-    t.integer "y2", null: false
+    t.integer "x1"
+    t.integer "x2"
+    t.integer "y1"
+    t.integer "y2"
     t.string "type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.float "area"
     t.float "perimeter"
-    t.float "meter_ratio"
+    t.float "milli_meter_ratio"
     t.float "angle"
     t.integer "parent_id"
     t.string "identifier"
@@ -285,12 +285,12 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_072041) do
   end
 
   create_table "upload_items", force: :cascade do |t|
-    t.bigint "publication_id", null: false
+    t.bigint "upload_id", null: false
     t.bigint "image_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["image_id"], name: "index_upload_items_on_image_id"
-    t.index ["publication_id"], name: "index_upload_items_on_publication_id"
+    t.index ["upload_id"], name: "index_upload_items_on_upload_id"
   end
 
   create_table "uploads", force: :cascade do |t|
@@ -329,5 +329,5 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_072041) do
   add_foreign_key "stable_isotopes", "skeletons"
   add_foreign_key "text_items", "upload_items", column: "page_id"
   add_foreign_key "upload_items", "images", on_delete: :cascade
-  add_foreign_key "upload_items", "uploads", column: "publication_id", on_delete: :cascade
+  add_foreign_key "upload_items", "uploads", on_delete: :cascade
 end

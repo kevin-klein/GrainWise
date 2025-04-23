@@ -11,38 +11,44 @@ class AnalyzeScales
 
     return if distance.nil?
 
-    scale.meter_ratio = ratio
+    scale.milli_meter_ratio = ratio
     scale.text = distance * 100
+    ap scale
     scale.save!
   end
 
   def scale_text(scale)
-    image = MinOpenCV.extractFigure(scale, scale.page.image.data)
+    scale.y1 -= 30
+    scale.y2 += 30
+    image = MinOpenCV.extractFigure(scale, scale.upload_item.image.data)
     return "" if image.size == 0
+
+    scale.y1 += 30
+    scale.y2 -= 30
 
     begin
       MinOpenCV.imwrite("scale.jpg", image)
       t = RTesseract.new("scale.jpg", lang: "eng")
       result = t.to_s.strip
-      result.tr("i", "1")
+      result.tr("i", "1").tr("I", "1")
     rescue
     end
   end
 
   def calculate_contour_ratio(scale, text)
-    return [nil, nil] if text.empty?
-    cm_match = text.match(/([0-9]+)cm$/)
-    m_match = text.match(/([0-9]+)m$/)
-
-    distance = if cm_match
-      cm_match.captures[0].to_f / 100
-    elsif m_match
-      m_match.captures[0].to_f
+    if text.empty?
+      distance = 1.0 # assume default 1mm
+    else
+      cm_match = text.match(/([0-9]+)cm$/)
+      mm_match = text.match(/([0-9]+)mm$/)
+      distance = if cm_match
+        cm_match.captures[0].to_f * 10
+      elsif mm_match
+        mm_match.captures[0].to_f
+      end
     end
 
-    ratio = if scale.text.present?
-      (scale.text.to_f / 100) / scale.width
-    elsif distance.present?
+    ratio = if distance.present?
       distance / scale.width
     end
 
@@ -50,7 +56,7 @@ class AnalyzeScales
   end
 
   def assign_contour_width(scale)
-    image = MinOpenCV.extractFigure(scale, scale.page.image.data)
+    image = MinOpenCV.extractFigure(scale, scale.upload_item.image.data)
     contours = MinOpenCV.findContours(image, "tree")
     rects = contours.map { MinOpenCV.minAreaRect _1 }
 
