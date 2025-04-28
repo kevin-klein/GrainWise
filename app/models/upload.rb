@@ -15,12 +15,9 @@
 class Upload < ApplicationRecord
   has_many :upload_items, dependent: :destroy
   has_many :figures, through: :pages
-  enum view: {
-    ventral: 0,
-    dorsal: 1
-  }
 
-  attr_accessor :site
+  belongs_to :site, optional: true
+  belongs_to :strain, optional: true
 
   has_one_attached :zip
 

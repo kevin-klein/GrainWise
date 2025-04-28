@@ -150,8 +150,8 @@ class UploadsController < AuthorizedController
 
     @upload = Upload.new({
       name: name,
-      site: publication_params[:site],
-      strain_id: publication_params[:strain],
+      site_id: publication_params[:site],
+      strain_id: publication_params[:strain_id],
       view: publication_params[:view],
       zip: publication_params[:zip]
     })
@@ -212,6 +212,6 @@ class UploadsController < AuthorizedController
 
   # Only allow a list of trusted parameters through.
   def publication_params
-    params.require(:upload).permit(:zip, :name, :site, :strain, :view)
+    params.require(:upload).permit(:zip, :name, :site, :strain_id, :view)
   end
 end

@@ -3,55 +3,55 @@ class GrainsController < AuthorizedController
 
   # GET /graves or /graves.json
   def index
-    grains = Grain.all
+    @grains = Grain.all
     # if params.dig(:search, :publication_id).present?
     #   grains = Grave
     #     .joins(page: :publication)
     #     .where({publication: {id: params.dig(:search, :publication_id)}})
     # end
 
-    @grains = grains
-      .includes(:scale, :site, :upload, upload_item: :image)
+    # @grains = grains
+    #   .includes(:scale, :site, :upload, upload_item: :image)
 
-    if params.dig(:search, :site_id).present?
-      @grains = @grains.where(site_id: params[:search][:site_id])
+    if params[:site_id].present? && params[:site_id] != "undefined"
+      @grains = @grains.where(site_id: params[:site_id])
     end
 
-    @grains = if params[:sort] == "area:desc"
-      @grains.order("real_world_area DESC NULLS LAST")
-    elsif params[:sort] == "area:asc"
-      @grains.order("real_world_area ASC NULLS LAST")
-    elsif params[:sort] == "perimeter:asc"
-      @grains.order("real_world_perimeter ASC NULLS LAST")
-    elsif params[:sort] == "perimeter:desc"
-      @grains.order("real_world_perimeter DESC NULLS LAST")
-    elsif params[:sort] == "width:desc"
-      @grains.order("real_world_width DESC NULLS LAST")
-    elsif params[:sort] == "width:asc"
-      @grains.order("real_world_width ASC NULLS LAST")
-    elsif params[:sort] == "length:asc"
-      @grains.order("real_world_height ASC NULLS LAST")
-    elsif params[:sort] == "length:desc"
-      @grains.order("real_world_height DESC NULLS LAST")
-    elsif params[:sort] == "id:asc"
-      @grains.order("id ASC NULLS LAST")
-    elsif params[:sort] == "id:desc"
-      @grains.order("id DESC NULLS LAST")
-    elsif params[:sort] == "depth:desc"
-      @grains.order("real_world_depth DESC NULLS LAST")
-    elsif params[:sort] == "depth:asc"
-      @grains.order("real_world_depth DESC NULLS LAST")
-    elsif params[:sort] == "site:asc"
-      @grains.joins(:site).reorder("sites.name ASC NULLS LAST")
-    elsif params[:sort] == "site:desc"
-      @grains.joins(:site).reorder("sites.name DESC NULLS LAST")
-    elsif params[:sort] == "publication:asc"
-      @grains.joins(:publication).reorder("publications.author ASC NULLS LAST")
-    elsif params[:sort] == "publication:desc"
-      @grains.joins(:publication).reorder("publications.author DESC NULLS LAST")
-    else
-      @grains.reorder("figures.created_at")
-    end
+    # @grains = if params[:sort] == "area:desc"
+    #   @grains.order("real_world_area DESC NULLS LAST")
+    # elsif params[:sort] == "area:asc"
+    #   @grains.order("real_world_area ASC NULLS LAST")
+    # elsif params[:sort] == "perimeter:asc"
+    #   @grains.order("real_world_perimeter ASC NULLS LAST")
+    # elsif params[:sort] == "perimeter:desc"
+    #   @grains.order("real_world_perimeter DESC NULLS LAST")
+    # elsif params[:sort] == "width:desc"
+    #   @grains.order("real_world_width DESC NULLS LAST")
+    # elsif params[:sort] == "width:asc"
+    #   @grains.order("real_world_width ASC NULLS LAST")
+    # elsif params[:sort] == "length:asc"
+    #   @grains.order("real_world_height ASC NULLS LAST")
+    # elsif params[:sort] == "length:desc"
+    #   @grains.order("real_world_height DESC NULLS LAST")
+    # elsif params[:sort] == "id:asc"
+    #   @grains.order("id ASC NULLS LAST")
+    # elsif params[:sort] == "id:desc"
+    #   @grains.order("id DESC NULLS LAST")
+    # elsif params[:sort] == "depth:desc"
+    #   @grains.order("real_world_depth DESC NULLS LAST")
+    # elsif params[:sort] == "depth:asc"
+    #   @grains.order("real_world_depth DESC NULLS LAST")
+    # elsif params[:sort] == "site:asc"
+    #   @grains.joins(:site).reorder("sites.name ASC NULLS LAST")
+    # elsif params[:sort] == "site:desc"
+    #   @grains.joins(:site).reorder("sites.name DESC NULLS LAST")
+    # elsif params[:sort] == "publication:asc"
+    #   @grains.joins(:publication).reorder("publications.author ASC NULLS LAST")
+    # elsif params[:sort] == "publication:desc"
+    #   @grains.joins(:publication).reorder("publications.author DESC NULLS LAST")
+    # else
+    #   @grains.reorder("figures.created_at")
+    # end
 
     @grains_pagy, @grains = pagy(@grains)
   end
@@ -75,7 +75,6 @@ class GrainsController < AuthorizedController
     end.flatten
   end
 
-  # GET /graves/1 or /graves/1.json
   def show
   end
 

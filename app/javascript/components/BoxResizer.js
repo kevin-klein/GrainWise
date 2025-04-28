@@ -170,7 +170,7 @@ function NewFigureDialog ({ closeDialog, addFigure }) {
   )
 }
 
-function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBox, setCurrentEditBox, onChangeFigure }) {
+function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBox, setCurrentFigure, onChangeFigure }) {
   const [dimensions, setDimensions] = React.useState({
     width: 0,
     height: 0
@@ -232,18 +232,20 @@ function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBo
           fill='#3F51B588'
           stroke='black'
         />
-        {Object.values(figures).map(figure => <Box onChangeFigure={onChangeFigure} canvas={null} key={figure.id} onDraggingStart={onDraggingStart} setActive={setCurrentEditBox} active={currentEditBox} figure={figure} />)}
+        {Object.values(figures).map(figure => <Box onChangeFigure={onChangeFigure} canvas={null} key={figure.id} onDraggingStart={onDraggingStart} setActive={setCurrentFigure} active={currentEditBox} figure={figure} />)}
       </Layer>
     </Stage>
   )
 }
 
-export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFigure, sites, image, page }) {
-  const { figures, updateFigure, setFigures, addFigure, removeFigure } = useFigureStore()
+export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image, page }) {
+  const [currentFigure, setCurrentFigure] = React.useState(null)
 
   const [rendering, setRendering] = React.useState('boxes')
   const [draggingState, setDraggingState] = React.useState(null)
   const [creatingNewFigure, setCreatingNewFigure] = React.useState(false)
+
+  const [currentScale, setCurrentScale] = React.useState(scale)
 
   const divRef = React.useRef(null)
 
@@ -276,13 +278,14 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
   }
 
   function onChangeFigure (id, figure) {
-    setFigures(Object.values(figures).map((currentFigure) => {
-      if (currentFigure.id === figure.id) {
-        return figure
-      } else {
-        return currentFigure
-      }
-    }))
+    // setFigures(Object.values(figures).map((currentFigure) => {
+    //   if (currentFigure.id === figure.id) {
+    //     return figure
+    //   } else {
+    //     return currentFigure
+    //   }
+    // }))
+    setCurrentScale(figure)
   }
 
   function setManualBoundingBox (figure, checked) {
@@ -308,7 +311,7 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
 
   function onDraggingStart (evt, data) {
     const figure = data.figure
-    setCurrentEditBox(figure.id)
+    setCurrentFigure(figure.id)
     let svgPoint = canvasRef.current.createSVGPoint()
     svgPoint.x = evt.clientX
     svgPoint.y = evt.clientY
@@ -325,39 +328,13 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
   }
 
   async function createFigure (type) {
-    const grave = Object.values(figures).filter(figure => figure.typeName === 'Grave')[0]
-
     let newFigure = null
-    if (grave !== undefined) {
-      if (type === 'Spine') {
-        const graveWidth = grave.x2 - grave.x1
-        const graveHeight = grave.y2 - grave.y1
-        const x1 = grave.x1 + graveWidth * 0.5
-        const x2 = grave.x1 + graveWidth * 0.5
 
-        const y1 = grave.y1 + graveHeight * 0.6
-        const y2 = grave.y1 + graveHeight * 0.4
-
-        newFigure = { ...grave, page_id: page.id, y1, y2, x1, x2, typeName: type }
-      } else {
-        const graveWidth = grave.x2 - grave.x1
-        const graveHeight = grave.y2 - grave.y1
-        const x1 = grave.x1 + graveWidth * 0.3
-        const x2 = grave.x1 + graveWidth * 0.6
-
-        const y1 = grave.y1 + graveHeight * 0.4
-        const y2 = grave.y1 + graveHeight * 0.6
-
-        newFigure = { ...grave, page_id: page.id, y1, y2, x1, x2, typeName: type }
-      }
-    } else {
-      newFigure = { typeName: type, page_id: page.id, x1: 0, y1: 0, x2: 100, y2: 100 }
-    }
+    newFigure = { typeName: type, page_id: page.id, x1: 0, y1: 0, x2: 100, y2: 100 }
 
     const response = await fetch('/figures.json', {
       method: 'POST',
       body: JSON.stringify({
-        grave_id: grave.id,
         figure: {
           x1: newFigure.x1,
           x2: newFigure.x2,
@@ -365,7 +342,7 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
           y2: newFigure.y2,
           page_id: newFigure.page_id,
           type: newFigure.typeName,
-          parent_id: grave.id
+          parent_id: grain.id
         }
       }),
       headers: {
@@ -375,55 +352,39 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
     })
     if (response.ok) {
       newFigure = await response.json()
-      addFigure({ ...newFigure, typeName: type })
-      setCurrentEditBox(newFigure.id)
+      setCurrentScale(newFigure)
+      setCurrentFigure(newFigure.id)
     } else {
       return Promise.reject(response)
     }
   }
 
-  function onSiteChange (evt) {
-    setSite(evt.value)
-  }
-
-  function onDrag (evt) {
-    if (draggingState !== null) {
-      const figure = figures[draggingState.data.figure.id]
-
-      draggingState.point.x = evt.clientX
-      draggingState.point.y = evt.clientY
-      const cursor = draggingState.point.matrixTransform(canvasRef.current.getScreenCTM().inverse())
-
-      if (evt.ctrlKey) {
-        const x1 = cursor.x - draggingState.x1
-        const y1 = cursor.y - draggingState.y1
-
-        const x2 = cursor.x - draggingState.x2
-        const y2 = cursor.y - draggingState.y2
-        updateFigure({ ...figure, x1, y1, x2, y2 })
-      } else {
-        if (draggingState.data.point === 1) {
-          let x = cursor.x - draggingState.x1
-          let y = cursor.y - draggingState.y1
-
-          if (figure.bounding_box_angle !== null) {
-            const result = rotatePoint(x, y, figure)
-            x = result.x
-            y = result.y
-          }
-          updateFigure({ ...figure, x1: x, y1: y })
-        } else {
-          let x = cursor.x - draggingState.x2
-          let y = cursor.y - draggingState.y2
-
-          if (figure.bounding_box_angle !== null) {
-            const result = rotatePoint(x, y, figure)
-            x = result.x
-            y = result.y
-          }
-          updateFigure({ ...figure, x2: x, y2: y })
+  async function onUpdateFigure () {
+    const response = await fetch(`/figures/${scale.id}.json`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        figure: {
+          x1: currentScale.x1,
+          x2: currentScale.x2,
+          y1: currentScale.y1,
+          y2: currentScale.y2,
+          page_id: currentScale.page_id,
+          type: currentScale.typeName,
+          parent_id: grain.id
         }
+      }),
+      headers: {
+        'X-CSRF-Token': token,
+        'Content-Type': 'application/json'
       }
+    })
+    if (response.ok) {
+      const newFigure = await response.json()
+      setCurrentScale(newFigure.figure)
+      setCurrentFigure(newFigure.figure.id)
+      onUpdateGrains()
+    } else {
+      return Promise.reject(response)
     }
   }
 
@@ -434,10 +395,10 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
         <div className='col-md-8 card' ref={divRef}>
           <Canvas
             grain={grain}
-            setCurrentEditBox={setCurrentFigure}
+            setCurrentFigure={setCurrentFigure}
             divRef={divRef}
             image={image}
-            figures={[scale]}
+            figures={[currentScale]}
             onDraggingStart={onDraggingStart}
             currentEditBox={currentFigure}
             onChangeFigure={onChangeFigure}
@@ -445,60 +406,47 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
         </div>
 
         <div className='col-md-4'>
-          <div style={{ position: 'sticky', top: 60 }} className='card'>
+          <div className='card'>
             <div className='card-body'>
               <h5 className='card-title'>Edit Grain Photograph</h5>
               <div className='card-text'>
+
+                <table className='table'>
+                  <tbody>
+                    <tr>
+                      <td>Width</td>
+                      <td>{grain.width}</td>
+                    </tr>
+                    <tr>
+                      <td>Height</td>
+                      <td>{grain.height}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
                 <ul className='list-group'>
                   <div
-                    onClick={() => { setCurrentEditBox(figure.id) }}
+                    onClick={() => { setCurrentFigure(currentScale.id) }}
                     className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>Scale</div>
                     </div>
-                    <div
-                      onClick={() => { removeEditBox(figure.id) }}
-                      className='btn btn-primary badge bg-primary rounded-pill'
-                      role='button' data-bs-toggle='button'
-                    >
-                      X
-                    </div>
                   </div>
-                  <div className='row mb-3 mt-3'>
-                    <div className='form-check ms-3'>
-                      <input
-                        className='form-check-input'
-                        type='checkbox'
-                        checked={scale.manual_bounding_box}
-                        onChange={(evt) => { setManualBoundingBox(scale, evt.target.checked) }}
-                      />
-                      <label className='form-check-label'>
-                        manual bounding box
-                      </label>
-                    </div>
-                  </div>
-
                   <div
-                    onClick={() => { setCurrentEditBox(figure.id) }}
-                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
+                    onClick={() => { setCurrentFigure(currentScale.id) }}
+                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(grain)}`}
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>Grain {grain.identifier}</div>
                     </div>
-                    <div
-                      onClick={() => { removeEditBox(figure.id) }}
-                      className='btn btn-primary badge bg-primary rounded-pill'
-                      role='button' data-bs-toggle='button'
-                    >
-                      X
-                    </div>
                   </div>
                   <div className='row mb-3 mt-3'>
                     <div className='form-check ms-3'>
                       <input
-                        className='form-check-input'
+                        className='form-check-input disabled'
                         type='checkbox'
+                        disabled
                         checked={scale.manual_bounding_box}
                         onChange={(evt) => { setManualBoundingBox(scale, evt.target.checked) }}
                       />
@@ -510,7 +458,7 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
                   <a
                     href='#'
                     onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
-                    className='list-group-item list-group-item-action d-flex justify-content-between align-items-start'
+                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentScale !== null ? 'disabled' : ''}`}
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>New Figure</div>
@@ -518,16 +466,10 @@ export default function BoxResizer ({ grain, scale, currentFigure, setCurrentFig
                   </a>
                 </ul>
               </div>
-              <form method='post'>
-                <input type='hidden' name='_method' value='patch' />
-                <input type='hidden' name='authenticity_token' value={token} />
-
-                <input value='Next' type='submit' className='btn btn-primary card-link mt-1' />
-              </form>
+              <input value='Save' onClick={(evt) => { evt.preventDefault(); onUpdateFigure() }} type='submit' className='btn btn-primary card-link mt-1' />
             </div>
           </div>
         </div>
-
       </div>
     </>
   )

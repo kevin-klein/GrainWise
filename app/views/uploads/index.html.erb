@@ -4,13 +4,13 @@
   <thead>
     <tr>
       <th>
-        <%= link_to('Title', url_for(params.permit!.to_h.merge({ sort: sortable_by('title') }))) %>
+        <%= link_to('Name', url_for(params.permit!.to_h.merge({ sort: sortable_by('name') }))) %>
       </th>
       <th>
-        <%= link_to('Author', url_for(params.permit!.to_h.merge({ sort: sortable_by('author') }))) %>
+        <%= link_to('Site', url_for(params.permit!.to_h.merge({ sort: sortable_by('author') }))) %>
       </th>
       <th>
-        <%= link_to('Year', url_for(params.permit!.to_h.merge({ sort: sortable_by('year') }))) %>
+        <%= link_to('Species', url_for(params.permit!.to_h.merge({ sort: sortable_by('year') }))) %>
       </th>
       <th></th>
     </tr>
@@ -20,38 +20,20 @@
     <% @publications.each do |publication| %>
       <tr>
         <td>
-          <%= publication.title %>
+          <%= publication.name %>
         </td>
         <td>
-          <%= publication.author %>
+          <%= publication.site&.name %>
         </td>
         <td>
-          <%= publication.year %>
+          <%= publication.strain&.name %>
         </td>
         <td>
-          <%= link_to "Pages", publication_pages_path(publication) %>
-          <div class="vr mx-1"></div>
-          <%= link_to "Stats", stats_publication_path(publication) %>
-          <div class="vr mx-1"></div>
-          <% if can?(:update, publication) %>
-            <%= link_to "Edit", edit_publication_path(publication) %>
-            <div class="vr mx-1"></div>
-            <%= link_to "Site", assign_site_publication_path(publication) %>
-            <div class="vr mx-1"></div>
-            <%= link_to "Tags", assign_tags_publication_path(publication) %>
-            <div class="vr mx-1"></div>
-          <% end %>
-          <%= link_to "Summary", summary_publication_path(publication) %>
-          <div class="vr mx-1"></div>
-          <% if can?(:delete, publication) %>
-            <%= link_to "Delete", publication_path(publication), method: :delete, 'data-confirm': 'Are you sure?' %>
-          <% end %>
-          <div class="vr mx-1"></div>
-          <%= link_to 'Download', rails_blob_path(publication.pdf, disposition: "attachment") %>
+
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
-<%= link_to "Upload new publication", new_publication_path %>
+<%= link_to "Upload", new_upload_path %>

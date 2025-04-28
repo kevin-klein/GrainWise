@@ -47,8 +47,15 @@ class FiguresController < AuthorizedController
   def update
     respond_to do |format|
       if @figure.update(figure_params)
+        AnalyzeScales.new.run([@figure])
         format.html { redirect_to figure_url(@figure), notice: "Figure was successfully updated." }
-        format.json { render :show, status: :ok, location: @figure }
+        format.json {
+          render json: {
+            figure: @figure,
+            errorcode: 0,
+            error: nil
+          }
+        }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @figure.errors, status: :unprocessable_entity }

@@ -3,7 +3,7 @@ class AssignGrainScales
     Figure.transaction do
       figures ||= Figure.includes({page: :image})
       figures.each do |figure|
-        dispatch_figure(figure) if figure.is_a?(Grain)
+        dispatch_figure(figure) if figure.is_a?(GrainFigure)
       end
     end
 
@@ -11,7 +11,7 @@ class AssignGrainScales
   end
 
   def dispatch_figure(figure)
-    figure.scale = figure.upload_item.figures.where(type: 'Scale').first
+    figure.scale = figure.upload_item.figures.where(type: "Scale").first
     figure.save!
   end
 end

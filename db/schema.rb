@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
+ActiveRecord::Schema[7.0].define(version: 2025_04_28_065249) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -115,27 +115,14 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
     t.float "area"
     t.float "perimeter"
     t.float "milli_meter_ratio"
-    t.float "angle"
     t.integer "parent_id"
     t.string "identifier"
     t.float "width"
     t.float "height"
     t.string "text"
-    t.bigint "site_id"
-    t.boolean "validated", default: false, null: false
-    t.boolean "verified", default: false, null: false
-    t.boolean "disturbed", default: false, null: false
-    t.text "contour", default: "[]", null: false
-    t.integer "deposition_type", default: 0, null: false
     t.integer "upload_id"
-    t.integer "percentage_scale"
-    t.integer "page_size"
     t.boolean "manual_bounding_box", default: false
-    t.integer "bounding_box_angle"
-    t.integer "bounding_box_width"
-    t.integer "bounding_box_height"
     t.float "probability"
-    t.jsonb "contour_info"
     t.float "real_world_area"
     t.float "real_world_width"
     t.float "real_world_height"
@@ -144,7 +131,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
     t.integer "control_points", array: true
     t.integer "anchor_points", array: true
     t.integer "view"
-    t.index ["site_id"], name: "index_figures_on_site_id"
+    t.jsonb "contour"
     t.index ["upload_item_id"], name: "index_figures_on_upload_item_id"
   end
 
@@ -169,6 +156,20 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
     t.index ["mt_haplogroup_id"], name: "index_genetics_on_mt_haplogroup_id"
     t.index ["skeleton_id"], name: "index_genetics_on_skeleton_id"
     t.index ["y_haplogroup_id"], name: "index_genetics_on_y_haplogroup_id"
+  end
+
+  create_table "grains", force: :cascade do |t|
+    t.bigint "site_id", null: false
+    t.bigint "strain_id", null: false
+    t.bigint "dorsal_id"
+    t.bigint "ventral_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "identifier"
+    t.index ["dorsal_id"], name: "index_grains_on_dorsal_id"
+    t.index ["site_id"], name: "index_grains_on_site_id"
+    t.index ["strain_id"], name: "index_grains_on_strain_id"
+    t.index ["ventral_id"], name: "index_grains_on_ventral_id"
   end
 
   create_table "images", force: :cascade do |t|
@@ -324,6 +325,10 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_17_185207) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "figures", "upload_items", on_delete: :cascade
   add_foreign_key "genetics", "skeletons"
+  add_foreign_key "grains", "figures", column: "dorsal_id"
+  add_foreign_key "grains", "figures", column: "ventral_id"
+  add_foreign_key "grains", "sites"
+  add_foreign_key "grains", "strains"
   add_foreign_key "page_texts", "upload_items", column: "page_id"
   add_foreign_key "skeletons", "figures"
   add_foreign_key "stable_isotopes", "skeletons"

@@ -1,12 +1,1 @@
-<%= form_tag(maps_path, method: :get) do %>
-  <%= select_tag(:tag_id, options_for_select(Tag.pluck(:name, :id), params[:tag_id]), class: 'form-select') %>
-  <%= submit_tag("Search", class: 'btn btn-primary mt-1') %>
-<% end %>
-
-<%= react_component("EuropeMap", props: { orientations: @skeleton_angles }) %>
-
-<ul>
-  <% @publications.each do |publication| %>
-    <li><%= publication.short_description %></li>
-  <% end %>
-</ul>
+<%= react_component("EuropeMap", props: { sites: @sites }) %>

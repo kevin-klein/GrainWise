@@ -1,1 +1,1 @@
-json.partial! "graves/grafe", grafe: @grafe
+json.partial! "grains/grain", locals: {grain: @grain}

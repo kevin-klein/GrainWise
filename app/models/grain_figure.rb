@@ -32,10 +32,18 @@
 #  view                 :integer
 #  contour              :jsonb
 #
-class Scale < Figure
-  belongs_to :grain_figure, foreign_key: "parent_id", optional: true, inverse_of: :scale
+class GrainFigure < Figure
+  has_one :scale, dependent: :destroy, foreign_key: "parent_id", class_name: "Scale", inverse_of: :grain_figure
+  has_one :dorsal_grain, class_name: "Grain", foreign_key: "ventral_id"
+  has_one :ventral_grain, class_name: "Grain", foreign_key: "dorsal_id"
 
-  # before_save do
-  #   self.meter_ratio = (text.to_i / 100.0) / width if width&.positive? && text.present?
-  # end
+  with_unit :area, square: true
+  with_unit :perimeter
+  with_unit :width
+  with_unit :height
+  with_unit :bounding_box_width
+  with_unit :bounding_box_height
+
+  with_unit :normalized_width
+  with_unit :normalized_height
 end

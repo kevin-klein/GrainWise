@@ -3,7 +3,6 @@
     <%= f.input :zip, as: :file %>
     <%= f.input :name %>
     <%= f.input :strain_id, collection: Strain.order(:name).pluck(:name, :id) %>
-    <%= f.input :view, collection: [['Ventral', 0], ['Dorsal', 1]] %>
     <%= f.input :site, collection: Site.order(:name).pluck(:name, :id) %>
     <%= f.submit(class: "btn btn-primary") %>
   <% end %>

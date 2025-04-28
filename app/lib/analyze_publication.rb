@@ -5,55 +5,41 @@ class AnalyzePublication
 
     path = create_temp_file(upload.zip.download)
 
-    images = []
-
+    images = {}
     Zip::File.open(path) do |zip_file|
       zip_file.each do |entry|
-        images << [entry.name, entry.get_input_stream.read]
+        next if entry.ftype == :directory
+
+        images[clean_name(entry.name)] ||= {ventral: nil, dorsal: nil}
+        images[clean_name(entry.name)][view_type(entry.name)] = entry.get_input_stream.read
       end
     end
 
     figures = []
-    images.each_with_index do |image, index|
+    images.each do |image_name, image_data|
       # MessageBus.publish("/importprogress", {
       #   message: "Analyzing pages",
       #   progress: index.to_f / (image_count - 1)
       # })
-      image_name, image = image
-      image = Vips::Image.new_from_buffer(image, "")
-      upload_item = upload.upload_items.new
+      ventral = image_data[:ventral]
+      dorsal = image_data[:dorsal]
 
-      image_data = image.write_to_buffer(".jpg")
-      upload_item.image = ::Image.create!(width: image.width, height: image.height)
-      File.binwrite(upload_item.image.file_path, image_data)
-      upload_item.save!
+      dorsal_figures, dorsal_grain = AnalyzeImage.new.run(upload, image_name, dorsal, :dorsal) if dorsal.present?
+      ventral_figures, ventral_grain = AnalyzeImage.new.run(upload, image_name, ventral, :ventral) if ventral.present?
 
-      predictions = predict_boxes(image_data)
+      figures += [ventral_figures, ventral_grain].flatten if ventral_figures.present?
+      figures += [dorsal_figures, dorsal_grain].flatten if dorsal_figures.present?
 
-      predictions.each do |prediction|
-        x1, y1, x2, y2 = prediction["box"]
-        type_name = prediction["label"]
-        probability = prediction["score"]
-        if x1.to_i == x2.to_i || y1.to_i == y2.to_i
-          next
-        end
-
-        figure = upload_item.figures.create!(x1: x1, y1: y1, x2: x2, y2: y2, probability: probability, type: type_name.camelize.singularize, upload: upload)
-        figures << figure
-      end
-
-      prediction = segment(image_data)
-      probability = prediction["score"]
-      contour = prediction["contour"].map do |item|
-        item.flatten
-      end
-      figure = upload_item.figures.create!(view: upload.view, identifier: image_name, probability: probability, type: "Grain", upload: upload, contour: contour)
-      figures << figure
+      Grain.create!(
+        identifier: image_name,
+        site: upload.site,
+        dorsal: dorsal_grain,
+        ventral: ventral_grain,
+        strain: upload.strain
+      )
     end
 
     Upload.transaction do
-      # MessageBus.publish("/importprogress", "Analyzing Text")
-      # BuildText.new.run(publication)
       AssignGrainScales.new.run(figures)
       MessageBus.publish("/importprogress", "Measuring Sizes")
       GraveSize.new.run(figures)
@@ -61,6 +47,14 @@ class AnalyzePublication
       AnalyzeScales.new.run(figures)
       MessageBus.publish("/importprogress", "Done. Please proceed to Grains in the NavBar.")
     end
+  end
+
+  def view_type(file_name)
+    file_name.split("/").first.to_sym
+  end
+
+  def clean_name(file_name)
+    file_name.split("/")[1..].join("").split(".")[0...-1].join("")
   end
 
   def create_temp_file(pdf)
@@ -75,25 +69,5 @@ class AnalyzePublication
     (0..page_count - 1).lazy.map do |page|
       Vips::Image.pdfload(path, page: page, dpi: 300).flatten
     end
-  end
-
-  def predict_boxes(image)
-    io = StringIO.new(image)
-    file = HTTP::FormData::File.new io, filename: "page.jpg"
-    response = HTTP.post(ENV["ML_SERVICE_URL"], form: {
-      image: file
-    })
-
-    response.parse["predictions"]
-  end
-
-  def segment(image)
-    io = StringIO.new(image)
-    file = HTTP::FormData::File.new io, filename: "page.jpg"
-    response = HTTP.post("#{ENV["ML_SERVICE_URL"]}/segment", form: {
-      image: file
-    })
-
-    response.parse["predictions"]
   end
 end
