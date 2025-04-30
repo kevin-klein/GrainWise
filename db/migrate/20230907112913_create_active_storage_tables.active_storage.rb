@@ -56,10 +56,10 @@ class CreateActiveStorageTables < ActiveRecord::Migration[5.2]
     [primary_key_type, foreign_key_type]
   end
 end
-Image.find_each do |image|
-  image.data.attach(io: File.open(Rails.root.join("public/uploads/images/#{image.id}.jpg")), filename: "#{image.id}.jpg", content_type: "image/jpg")
-end
+# Image.find_each do |image|
+#   image.data.attach(io: File.open(Rails.root.join("public/uploads/images/#{image.id}.jpg")), filename: "#{image.id}.jpg", content_type: "image/jpg")
+# end
 
-Publication.find_each do |publication|
-  publication.pdf.attach(io: File.open(Rails.root.join("public/uploads/pdfs/#{publication.id}.pdf")), filename: "#{publication.title}.pdf", content_type: "application/pdf")
-end
+# Publication.find_each do |publication|
+#   publication.pdf.attach(io: File.open(Rails.root.join("public/uploads/pdfs/#{publication.id}.pdf")), filename: "#{publication.title}.pdf", content_type: "application/pdf")
+# end

@@ -50,7 +50,7 @@ function GrainListView ({ grains, selected, setSelected }) {
       {grains.map(grain => {
         return (
           <a href='#' onClick={() => setSelected(grain.id)} className={`list-group-item list-group-item-action ${selected === grain.id ? 'active' : ''}`} key={grain.id}>
-            {grain.identifier}
+            {grain.id} - {grain.identifier}
           </a>
         )
       }
@@ -60,7 +60,7 @@ function GrainListView ({ grains, selected, setSelected }) {
 }
 
 function ViewTabs ({ grain, onUpdateGrains }) {
-  const [view, setView] = React.useState(grain.ventral !== undefined ? 'ventral' : 'dorsal')
+  const [view, setView] = React.useState(grain.ventral !== undefined ? 'dorsal' : 'ventral')
 
   const figure = view === 'ventral' ? grain.ventral : grain.dorsal
 
@@ -68,16 +68,20 @@ function ViewTabs ({ grain, onUpdateGrains }) {
     <div>
       <ul className='nav nav-tabs'>
         <li className='nav-item'>
-          <a className={`nav-link ${view === 'ventral' ? 'active' : ''}`} aria-current='page' href='#'>Ventral</a>
+          <a className={`nav-link ${view === 'dorsal' ? 'active' : ''}`} onClick={() => setView('dorsal')} href='#'>Dorsal</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${view === 'dorsal' ? 'active' : ''}`} href='#'>Dorsal</a>
+          <a className={`nav-link ${view === 'ventral' ? 'active' : ''}`} onClick={() => setView('ventral')} aria-current='page' href='#'>Lateral</a>
         </li>
       </ul>
 
       {figure !== undefined && <BoxResizer onUpdateGrains={onUpdateGrains} key={figure?.id} grain={figure} image={figure.image} scale={figure.scale} />}
     </div>
   )
+
+  // dorsal: length/width
+  // lateral: thickness/length
+  // ventral: length/width
 }
 
 export default function GrainList (params) {
@@ -101,7 +105,7 @@ export default function GrainList (params) {
 
   return (
     <div className='row'>
-      <div className='col-md-12'>
+      <div className='col-md-12 mb-2'>
         <GrainFilter site={site} setSite={setSite} />
       </div>
 

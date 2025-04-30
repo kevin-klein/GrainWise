@@ -8,10 +8,12 @@ import io
 from segment_anything import sam_model_registry, SamPredictor
 import cv2
 
-sam_checkpoint = "models/sam_vit_h_4b8939.pth"
-model_type = "vit_h"
+# sam_checkpoint = "models/sam_vit_h_4b8939.pth"
+sam_checkpoint = "models/sam_vit_b_01ec64.pth"
+model_type = "vit_b"
 
-device = "cuda"
+# device = "cuda"
+device = "cpu"
 
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
@@ -19,13 +21,14 @@ sam.to(device=device)
 labels = torch.load('models/retinanet_v2_labels.model')
 labels = {v: k for k, v in labels.items()}
 
-if torch.cuda.is_available():
-    device = torch.device('cuda')
-else:
-    device = torch.device('cpu')
+# if torch.cuda.is_available():
+#     device = torch.device('cuda')
+# else:
+#     device = torch.device('cpu')
+device = torch.device('cpu')
 
 loaded_model = get_model(num_classes = len(labels.keys()), device=device)
-loaded_model.load_state_dict(torch.load('models/retinanet_v2_dfg.model', map_location=device))
+# loaded_model.load_state_dict(torch.load('models/retinanet_v2_dfg.model', map_location=device))
 
 loaded_model.eval()
 

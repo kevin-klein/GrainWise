@@ -1,7 +1,7 @@
 class AnalyzePublication
   def run(upload)
     sleep(2.seconds)
-    MessageBus.publish("/importprogress", "Converting pdf pages to images")
+    MessageBus.publish("/importprogress", "Analyzing zip file contents")
 
     path = create_temp_file(upload.zip.download)
 
