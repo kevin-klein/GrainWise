@@ -17,6 +17,10 @@ class GrainsController < AuthorizedController
       @grains = @grains.where(site_id: params[:site_id])
     end
 
+    if params[:species_id].present? && params[:species_id] != "undefined"
+      @grains = @grains.where(strain_id: params[:species_id])
+    end
+
     # @grains = if params[:sort] == "area:desc"
     #   @grains.order("real_world_area DESC NULLS LAST")
     # elsif params[:sort] == "area:asc"

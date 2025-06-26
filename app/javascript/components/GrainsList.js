@@ -4,8 +4,8 @@ import BoxResizer from './BoxResizer'
 
 const fetcher = (...args) => fetch(...args).then(res => res.json())
 
-function useGrains ({ page, site }) {
-  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&site_id=${site}`, fetcher)
+function useGrains ({ page, site, species }) {
+  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&site_id=${site}&species_id=${species}`, fetcher)
 
   return {
     grains: data,
@@ -119,6 +119,7 @@ function defaultGrainView (grain) {
 }
 
 function ViewTabs ({ grain, onUpdateGrains }) {
+  console.log(grain)
   const [view, setView] = React.useState(defaultGrainView(grain))
 
   const figure = grain[view]
@@ -154,7 +155,7 @@ export default function GrainList (params) {
   const [selected, setSelected] = React.useState(null)
   const [site, setSite] = React.useState(undefined)
   const [species, setSpecies] = React.useState(undefined)
-  const { grains, isLoading, isError, mutate } = useGrains({ page, site })
+  const { grains, isLoading, isError, mutate } = useGrains({ page, site, species })
 
   React.useEffect(() => {
     if (grains !== undefined && selected === null && grains.grains.length > 0) {
@@ -168,6 +169,8 @@ export default function GrainList (params) {
 
   if (isError) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
+
+  const selectedGrain = grains.grains.filter(grain => grain.id === selected)[0]
 
   return (
     <div className='row'>
@@ -184,7 +187,7 @@ export default function GrainList (params) {
       </div>
 
       <div className='col-md-9'>
-        {selected !== null && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={grains.grains.filter(grain => grain.id === selected)[0]} key={selected} />}
+        {selected !== null && selectedGrain !== undefined && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={selectedGrain} key={selected} />}
       </div>
     </div>
   )
