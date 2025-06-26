@@ -18,7 +18,7 @@ device = "cpu"
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
 
-labels = torch.load('models/retinanet_v2_labels.model')
+labels = torch.load('models/retinanet_v2_labels.model', weights_only=True)
 labels = {v: k for k, v in labels.items()}
 
 # if torch.cuda.is_available():
@@ -71,7 +71,7 @@ def upload():
     return { 'predictions': result }
 
 @app.post('/segment')
-def upload_skeleton_angle():
+def upload_grain_for_segmentation():
     upload_file = request.POST['image']
     request_object_content = upload_file.file.read()
     pil_image = Image.open(io.BytesIO(request_object_content))

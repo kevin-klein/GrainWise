@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_04_28_065249) do
+ActiveRecord::Schema[7.0].define(version: 2025_05_07_110418) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -166,9 +166,13 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_28_065249) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "identifier"
+    t.bigint "lateral_id"
+    t.bigint "ts_id"
     t.index ["dorsal_id"], name: "index_grains_on_dorsal_id"
+    t.index ["lateral_id"], name: "index_grains_on_lateral_id"
     t.index ["site_id"], name: "index_grains_on_site_id"
     t.index ["strain_id"], name: "index_grains_on_strain_id"
+    t.index ["ts_id"], name: "index_grains_on_ts_id"
     t.index ["ventral_id"], name: "index_grains_on_ventral_id"
   end
 
@@ -303,6 +307,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_28_065249) do
     t.integer "site_id"
     t.integer "strain_id"
     t.integer "view"
+    t.string "feature"
+    t.string "sample"
     t.index ["user_id"], name: "index_uploads_on_user_id"
   end
 
@@ -326,6 +332,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_04_28_065249) do
   add_foreign_key "figures", "upload_items", on_delete: :cascade
   add_foreign_key "genetics", "skeletons"
   add_foreign_key "grains", "figures", column: "dorsal_id"
+  add_foreign_key "grains", "figures", column: "lateral_id"
+  add_foreign_key "grains", "figures", column: "ts_id"
   add_foreign_key "grains", "figures", column: "ventral_id"
   add_foreign_key "grains", "sites"
   add_foreign_key "grains", "strains"

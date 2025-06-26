@@ -54,6 +54,7 @@ class GrainsController < AuthorizedController
     # end
 
     @grains_pagy, @grains = pagy(@grains)
+    @pagination = pagy_metadata(@grains_pagy)
   end
 
   def orientations

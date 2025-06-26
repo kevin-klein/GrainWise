@@ -25,6 +25,16 @@ function useSites () {
   }
 }
 
+function useSpecies () {
+  const { data, error, isLoading } = useSWR('/strains.json', fetcher)
+
+  return {
+    sites: data,
+    isLoading,
+    isError: error
+  }
+}
+
 function GrainFilter ({ site, setSite }) {
   const { sites, isLoading, isError } = useSites()
 
@@ -35,6 +45,25 @@ function GrainFilter ({ site, setSite }) {
     <div className='form-group select required search_site_id'>
       <label className='select required' htmlFor='search_site_id'>Site</label>
       <select value={site} onChange={(evt) => setSite(evt.target.value)} className='form-control select required' name='search[site_id]' id='search_site_id'>
+        <option value={undefined} label='' />
+        {sites.map(site => (
+          <option key={site.id} value={site.id} label={site.name} />
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function SpeciesFilter ({ species, setSpecies }) {
+  const { sites, isLoading, isError } = useSpecies()
+
+  if (isError) return <div>failed to load</div>
+  if (isLoading) return <div>loading...</div>
+
+  return (
+    <div className='form-group select required search_site_id'>
+      <label className='select required' htmlFor='search_site_id'>Species</label>
+      <select value={species} onChange={(evt) => setSpecies(evt.target.value)} className='form-control select required' name='search[site_id]' id='search_site_id'>
         <option value={undefined} label='' />
         {sites.map(site => (
           <option key={site.id} value={site.id} label={site.name} />
@@ -59,19 +88,55 @@ function GrainListView ({ grains, selected, setSelected }) {
   )
 }
 
-function ViewTabs ({ grain, onUpdateGrains }) {
-  const [view, setView] = React.useState(grain.ventral !== undefined ? 'dorsal' : 'ventral')
+function range (size, startAt) {
+  return [...Array(size).keys()].map(i => i + startAt)
+}
 
-  const figure = view === 'ventral' ? grain.ventral : grain.dorsal
+function Pagination ({ page, setPage, pagination }) {
+  const pages = range(6, page - 3).filter(i => i > 0 && i <= pagination.pages)
+
+  return (
+    <nav aria-label='Page navigation example'>
+      <ul className='pagination'>
+        <li className='page-item'><a className='page-link' href='#'>Previous</a></li>
+        {pages.map(currentPage => (
+          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' href='#'>{currentPage}</a></li>
+        ))}
+        <li className='page-item'><a className='page-link' href='#'>Next</a></li>
+      </ul>
+    </nav>
+  )
+}
+
+function defaultGrainView (grain) {
+  const views = ['dorsal', 'lateral', 'ventral']
+
+  for (const view of views) {
+    if (grain[view] !== undefined) {
+      return view
+    }
+  }
+}
+
+function ViewTabs ({ grain, onUpdateGrains }) {
+  const [view, setView] = React.useState(defaultGrainView(grain))
+
+  const figure = grain[view]
 
   return (
     <div>
       <ul className='nav nav-tabs'>
         <li className='nav-item'>
-          <a className={`nav-link ${view === 'dorsal' ? 'active' : ''}`} onClick={() => setView('dorsal')} href='#'>Dorsal</a>
+          <a className={`nav-link ${grain.dorsal === undefined ? 'disabled' : ''} ${view === 'dorsal' ? 'active' : ''}`} onClick={() => setView('dorsal')} href='#'>Dorsal</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${view === 'ventral' ? 'active' : ''}`} onClick={() => setView('ventral')} aria-current='page' href='#'>Lateral</a>
+          <a className={`nav-link ${grain.lateral === undefined ? 'disabled' : ''} ${view === 'lateral' ? 'active' : ''}`} onClick={() => setView('lateral')} aria-current='page' href='#'>Lateral</a>
+        </li>
+        <li className='nav-item'>
+          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={() => setView('ventral')} aria-current='page' href='#'>Ventral</a>
+        </li>
+        <li className='nav-item'>
+          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={() => setView('ts')} aria-current='page' href='#'>T.S.</a>
         </li>
       </ul>
 
@@ -88,13 +153,14 @@ export default function GrainList (params) {
   const [page, setPage] = React.useState(1)
   const [selected, setSelected] = React.useState(null)
   const [site, setSite] = React.useState(undefined)
+  const [species, setSpecies] = React.useState(undefined)
   const { grains, isLoading, isError, mutate } = useGrains({ page, site })
 
   React.useEffect(() => {
-    if (grains !== undefined && selected === null && grains.length > 0) {
-      setSelected(grains[0].id)
+    if (grains !== undefined && selected === null && grains.grains.length > 0) {
+      setSelected(grains.grains[0].id)
     }
-  }, [grains])
+  }, [grains?.grains])
 
   function onUpdateGrains () {
     mutate()
@@ -107,15 +173,18 @@ export default function GrainList (params) {
     <div className='row'>
       <div className='col-md-12 mb-2'>
         <GrainFilter site={site} setSite={setSite} />
+        <SpeciesFilter species={species} setSpecies={setSpecies} />
       </div>
 
       <div className='col-md-3'>
-        <GrainListView grains={grains} selected={selected} setSelected={setSelected} />
+        <GrainListView grains={grains.grains} selected={selected} setSelected={setSelected} />
+        <div className='mt-3'>
+          <Pagination page={page} setPage={setPage} pagination={grains.pagination} />
+        </div>
       </div>
 
       <div className='col-md-9'>
-        {selected !== null && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={grains.filter(grain => grain.id === selected)[0]} key={selected} />}
-        {/* {selected !== null && <BoxResizer key={selected?.id} grain={selected} image={selected.image} scale={selected.scale} />} */}
+        {selected !== null && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={grains.grains.filter(grain => grain.id === selected)[0]} key={selected} />}
       </div>
     </div>
   )

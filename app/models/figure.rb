@@ -46,7 +46,9 @@ class Figure < ApplicationRecord
 
   enum view: {
     ventral: 0,
-    dorsal: 1
+    dorsal: 1,
+    lateral: 2,
+    ts: 3
   }
 
   has_and_belongs_to_many :tags

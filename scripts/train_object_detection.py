@@ -129,7 +129,7 @@ def get_model(num_classes, device):
     model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(num_classes=num_classes, trainable_backbone_layers=5)
     # model = torchvision.models.detection.fcos_resnet50_fpn(num_classes=num_classes)
     # model.load_state_dict(torch.load('models/fcos_grain_wise.model', map_location=device))
-    model.load_state_dict(torch.load('models/rcnn_dfg.model', map_location=device))
+    model.load_state_dict(torch.load('models/rcnn_dfg.model', map_location=device, weights_only=True))
     # model.load_state_dict(torch.load('models/retinanet_v2_dfg_new.model', map_location=device))
     return model
 
