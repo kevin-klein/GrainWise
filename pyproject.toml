@@ -28,6 +28,8 @@ bottle = "^0.13.2"
 # priority = "explicit"
 tqdm = "^4.67.1"
 segment-anything = {git = "https://github.com/facebookresearch/segment-anything.git"}
+mobile-sam = {git = "https://github.com/ChaoningZhang/MobileSAM.git"}
+timm = "^1.0.19"
 
 [build-system]
 requires = ["poetry-core"]

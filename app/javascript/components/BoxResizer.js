@@ -238,7 +238,7 @@ function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBo
   )
 }
 
-export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image, page }) {
+export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image, page, view }) {
   const [currentFigure, setCurrentFigure] = React.useState(null)
 
   const [rendering, setRendering] = React.useState('boxes')
@@ -388,6 +388,15 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
     }
   }
 
+  let labels = []
+  if (view === 'ventral') {
+    labels = ['Width', 'Length']
+  } else if (view === 'dorsal') {
+    labels = ['Width', 'Length']
+  } else {
+    labels = ['Thickness', 'Length']
+  }
+
   return (
     <>
       {creatingNewFigure && <NewFigureDialog addFigure={createFigure} closeDialog={() => setCreatingNewFigure(false)} />}
@@ -414,11 +423,11 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                 <table className='table'>
                   <tbody>
                     <tr>
-                      <td>Width</td>
+                      <td>{labels[0]}</td>
                       <td>{grain.width}</td>
                     </tr>
                     <tr>
-                      <td>Height</td>
+                      <td>{labels[1]}</td>
                       <td>{grain.height}</td>
                     </tr>
                   </tbody>

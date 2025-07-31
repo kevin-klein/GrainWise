@@ -18,7 +18,7 @@ function Markers ({ sites }) {
     return (
       <Marker key={site.id} position={[site.lat, site.lon]}>
         <Popup>
-          Site: <a href='' disabled>{site.name}</a>
+          Site: <a href={`/grains?site_id=${site.id}`} disabled>{site.name}</a>
         </Popup>
       </Marker>
     )

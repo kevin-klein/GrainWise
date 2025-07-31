@@ -4,8 +4,8 @@ import BoxResizer from './BoxResizer'
 
 const fetcher = (...args) => fetch(...args).then(res => res.json())
 
-function useGrains ({ page, site }) {
-  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&site_id=${site}`, fetcher)
+function useGrains ({ page, site, species }) {
+  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&site_id=${site}&species_id=${species}`, fetcher)
 
   return {
     grains: data,
@@ -100,7 +100,7 @@ function Pagination ({ page, setPage, pagination }) {
       <ul className='pagination'>
         <li className='page-item'><a className='page-link' href='#'>Previous</a></li>
         {pages.map(currentPage => (
-          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' href='#'>{currentPage}</a></li>
+          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' onClick={() => setPage(currentPage)} href='#'>{currentPage}</a></li>
         ))}
         <li className='page-item'><a className='page-link' href='#'>Next</a></li>
       </ul>
@@ -136,11 +136,11 @@ function ViewTabs ({ grain, onUpdateGrains }) {
           <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={() => setView('ventral')} aria-current='page' href='#'>Ventral</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={() => setView('ts')} aria-current='page' href='#'>T.S.</a>
+          <a className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={() => setView('ts')} aria-current='page' href='#'>T.S.</a>
         </li>
       </ul>
 
-      {figure !== undefined && <BoxResizer onUpdateGrains={onUpdateGrains} key={figure?.id} grain={figure} image={figure.image} scale={figure.scale} />}
+      {figure !== undefined && <BoxResizer view={view} onUpdateGrains={onUpdateGrains} key={figure?.id} grain={figure} image={figure.image} scale={figure.scale} />}
     </div>
   )
 
@@ -150,11 +150,14 @@ function ViewTabs ({ grain, onUpdateGrains }) {
 }
 
 export default function GrainList (params) {
+  const urlParams = new URL(document.location.toString()).searchParams
+  const urlSiteId = urlParams.get('site_id')
+
   const [page, setPage] = React.useState(1)
   const [selected, setSelected] = React.useState(null)
-  const [site, setSite] = React.useState(undefined)
+  const [site, setSite] = React.useState(urlSiteId)
   const [species, setSpecies] = React.useState(undefined)
-  const { grains, isLoading, isError, mutate } = useGrains({ page, site })
+  const { grains, isLoading, isError, mutate } = useGrains({ page, site, species })
 
   React.useEffect(() => {
     if (grains !== undefined && selected === null && grains.grains.length > 0) {
@@ -168,6 +171,8 @@ export default function GrainList (params) {
 
   if (isError) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
+
+  const selectedGrain = grains.grains.filter(grain => grain.id === selected)[0]
 
   return (
     <div className='row'>
@@ -184,7 +189,7 @@ export default function GrainList (params) {
       </div>
 
       <div className='col-md-9'>
-        {selected !== null && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={grains.grains.filter(grain => grain.id === selected)[0]} key={selected} />}
+        {selected !== null && selectedGrain !== undefined && selected !== undefined && <ViewTabs onUpdateGrains={onUpdateGrains} grain={selectedGrain} key={selected} />}
       </div>
     </div>
   )

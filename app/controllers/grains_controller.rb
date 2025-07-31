@@ -13,8 +13,12 @@ class GrainsController < AuthorizedController
     # @grains = grains
     #   .includes(:scale, :site, :upload, upload_item: :image)
 
-    if params[:site_id].present? && params[:site_id] != "undefined"
+    if params[:site_id].present? && params[:site_id] != "undefined" && params[:site_id] != "null"
       @grains = @grains.where(site_id: params[:site_id])
+    end
+
+    if params[:species_id].present? && params[:species_id] != "undefined"
+      @grains = @grains.where(strain_id: params[:species_id])
     end
 
     # @grains = if params[:sort] == "area:desc"

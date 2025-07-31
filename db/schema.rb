@@ -169,6 +169,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_31_074449) do
     t.bigint "lateral_id"
     t.bigint "ts_id"
     t.bigint "upload_id"
+    t.boolean "complete"
+    t.boolean "validated"
     t.index ["dorsal_id"], name: "index_grains_on_dorsal_id"
     t.index ["lateral_id"], name: "index_grains_on_lateral_id"
     t.index ["site_id"], name: "index_grains_on_site_id"

@@ -134,17 +134,17 @@ ReactOnRails.register({
 })
 Rails.start()
 
-document.querySelector('.dropzone').addEventListener('dragover', function (event) {
+document.querySelector('.dropzone')?.addEventListener('dragover', function (event) {
   event.preventDefault()
   event.stopPropagation()
   event.target.classList.add('dragging')
 })
 
-document.querySelector('.dropzone').addEventListener('dragleave', function (event) {
+document.querySelector('.dropzone')?.addEventListener('dragleave', function (event) {
   event.target.classList.remove('dragging')
 })
 
-document.querySelector('.dropzone').addEventListener('drop', function (event) {
+document.querySelector('.dropzone')?.addEventListener('drop', function (event) {
   event.preventDefault()
   event.stopPropagation()
   event.target.classList.remove('dragging')

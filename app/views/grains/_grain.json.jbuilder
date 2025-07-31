@@ -17,3 +17,9 @@ if grain.dorsal.present?
     json.partial! "grains/grain_figure", locals: {grain: grain.dorsal}
   end
 end
+
+if grain.ts.present?
+  json.ts do
+    json.partial! "grains/grain_figure", locals: {grain: grain.ts}
+  end
+end
