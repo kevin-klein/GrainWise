@@ -8,34 +8,43 @@ class TableBuilder
       csv << attributes
 
       grains.each do |grain|
-        dorsal_length = grain.dorsal.width_with_unit
-        lateral_length = grain.lateral.width_with_unit
+        dorsal_length = grain.dorsal.height_with_unit
+        ventral_length = grain.ventral&.height_with_unit
 
-        average_length = (dorsal_length[:value] + lateral_length[:value]) / 2
+        average_length = if ventral_length.nil?
+          dorsal_length[:value]
+        else
+          (dorsal_length[:value] + ventral_length[:value]) / 2
+        end
 
-        dorsal_breadth = grain.dorsal.height_with_unit
-        lateral_breadth = grain.lateral.height_with_unit
+        dorsal_width = grain.dorsal.width_with_unit
+        ventral_width = grain.ventral&.width_with_unit
 
-        average_breadth = (dorsal_length[:value] + lateral_length[:value]) / 2
+        average_breadth = if ventral_width.nil?
+          dorsal_width[:value]
+        else
+          (dorsal_width[:value] + ventral_width[:value]) / 2
+        end
 
+        thickness = grain.lateral&.width_with_unit
 
         csv << [
           grain.upload.feature,
           grain.upload.sample,
           grain.strain.name,
           "",
-          number_with_unit(dorsal_length),
-          number_with_unit(lateral_length),
+          number_with_unit(dorsal_length), # length 1
+          number_with_unit(ventral_length), # length 2
           number_with_unit({unit: "mm", value: average_length}),
-          number_with_unit(dorsal_breadth), # breadth 1
-          number_with_unit(lateral_breadth), # breadth 2
+          number_with_unit(dorsal_width), # breadth 1
+          number_with_unit(ventral_width), # breadth 2
           number_with_unit({unit: "mm", value: average_breadth}), # average breadth
-          number_with_unit(dorsal_breadth), # thickness 1
-          number_with_unit(lateral_breadth), # thickness 2
-          number_with_unit({unit: "mm", value: average_breadth}), # average thickness
-          number_with_unit(dorsal_breadth), # altura 1
-          number_with_unit(lateral_breadth), # altura 2
-          number_with_unit({unit: "mm", value: average_breadth}), # average altura
+          number_with_unit(thickness), # thickness 1
+          "", # thickness 2
+          "", # average thickness
+          "", # altura 1
+          "", # altura 2
+          "", # average altura
           "", # average thickness photo
           ""
         ]

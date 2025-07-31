@@ -42,7 +42,8 @@ class AnalyzePublication
         dorsal: dorsal_grain,
         lateral: lateral_grain,
         ventral: ventral_grain,
-        strain: upload.strain
+        strain: upload.strain,
+        upload: upload
       )
     end
 

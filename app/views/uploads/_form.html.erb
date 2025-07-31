@@ -1,9 +1,21 @@
 <div class='container'>
   <%= simple_form_for(upload) do |f| %>
-    <%= f.input :zip, as: :file %>
+
+    <!-- Drag and Drop Zone for the File -->
+    <div class="file-upload-zone">
+      <%= f.input :zip, as: :file, input_html: { class: 'file-input', style: 'display:none;' } %>
+      <label for="upload_zip" class="dropzone">
+        <p>Drag and drop your file here, or click to select it</p>
+      </label>
+    </div>
+
     <%= f.input :name %>
-    <%= f.input :strain_id, collection: Strain.order(:name).pluck(:name, :id) %>
+
+    <%= f.input :strain_id, collection: Strain.order(:name).pluck(:name, :id), label: 'Species' %>
+
     <%= f.input :site, collection: Site.order(:name).pluck(:name, :id) %>
+
     <%= f.submit(class: "btn btn-primary") %>
+
   <% end %>
 </div>

@@ -57,6 +57,12 @@ class GrainsController < AuthorizedController
     @pagination = pagy_metadata(@grains_pagy)
   end
 
+  def export
+    table = TableBuilder.new.build(Grain.all)
+
+    send_data table, filename: "grains.csv"
+  end
+
   def orientations
     tag_id = Tag.find_by(name: params[:name])
     @skeleton_angles = Site.includes(

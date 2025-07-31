@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 import torch
 import numpy as np
 import io
-from segment_anything import sam_model_registry, SamPredictor
+# from segment_anything import sam_model_registry, SamPredictor
 import cv2
 
 # sam_checkpoint = "models/sam_vit_h_4b8939.pth"
@@ -15,8 +15,8 @@ model_type = "vit_b"
 # device = "cuda"
 device = "cpu"
 
-sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-sam.to(device=device)
+# sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+# sam.to(device=device)
 
 labels = torch.load('models/retinanet_v2_labels.model', weights_only=True)
 labels = {v: k for k, v in labels.items()}
@@ -75,38 +75,38 @@ def upload_grain_for_segmentation():
     upload_file = request.POST['image']
     request_object_content = upload_file.file.read()
     pil_image = Image.open(io.BytesIO(request_object_content))
+
     open_cv_image = np.array(pil_image)
+    gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
 
-    height, width, channels = open_cv_image.shape
+    height, width = gray.shape
+    center_x = width // 2
+    center_y = height // 2
+    center_pixel_color = gray[center_y, center_x]
 
-    predictor = SamPredictor(sam)
-    predictor.set_image(open_cv_image)
+    print(center_pixel_color)
 
-    input_point = np.array([[width / 2, height / 2]])
-    input_label = np.array([1])
+    # Apply a threshold to get a binary image (dark object on bright background)
+    _, binary = cv2.threshold(gray, center_pixel_color * 0.8, 255, cv2.THRESH_BINARY_INV)
 
-    masks, scores, logits = predictor.predict(
-        point_coords=input_point,
-        point_labels=input_label,
-        multimask_output=True,
-    )
+    # _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    max_score_index = np.argmax(scores)
-    mask = masks[max_score_index]
-    score = scores[max_score_index]
+    # Find contours
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    h, w = mask.shape[-2:]
-    mask = mask.reshape(h, w)
+    if len(contours) > 0:
+        # Get the largest contour (assuming it is the dark object)
+        largest_contour = max(contours, key=cv2.contourArea)
 
-    mask = mask.astype(dtype='uint8')
-    mask *= 255
-
-    contours, _  = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    return { 'predictions': {
-        'score': score.item(),
-        'contour': contours[0].astype(int).tolist()
-    } }
+        return { 'predictions': {
+            'score': 1,
+            'contour': largest_contour.astype(int).tolist()
+        } }
+    else:
+        return { 'predictions': {
+            'score': 1,
+            'contour': []
+        } }
 
 if __name__ == '__main__':
-    app.run(debug=True, reloader=True, host='0.0.0.0')
+    app.run(debug=True, reloader=True, host='0.0.0.0', port=9001)

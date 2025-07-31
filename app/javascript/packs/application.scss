@@ -245,3 +245,39 @@ svg {
 .leaflet-container {
   font-family: "Roboto", sans-serif;
 }
+
+/* Styling the drag-and-drop file upload zone */
+.file-upload-zone {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.dropzone {
+  display: block;
+  width: 100%;
+  padding: 40px;
+  border: 2px dashed #007bff;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+  background-color: #f9f9f9;
+  color: #007bff;
+}
+
+.dropzone:hover {
+  background-color: #f0f8ff;
+}
+
+.dropzone p {
+  margin: 0;
+}
+
+.dropzone:active {
+  background-color: #e9ecef;
+}
+
+/* Optional: make the input visible on file selection */
+.file-input {
+  display: none;
+}

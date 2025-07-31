@@ -133,3 +133,36 @@ ReactOnRails.register({
   }
 })
 Rails.start()
+
+document.querySelector('.dropzone').addEventListener('dragover', function (event) {
+  event.preventDefault()
+  event.stopPropagation()
+  event.target.classList.add('dragging')
+})
+
+document.querySelector('.dropzone').addEventListener('dragleave', function (event) {
+  event.target.classList.remove('dragging')
+})
+
+document.querySelector('.dropzone').addEventListener('drop', function (event) {
+  event.preventDefault()
+  event.stopPropagation()
+  event.target.classList.remove('dragging')
+
+  // Get the dropped file
+  const file = event.dataTransfer.files[0]
+
+  // Update the file input with the dropped file
+  const input = document.querySelector('.file-input')
+  input.files = event.dataTransfer.files
+
+  // Optionally, update the label text with the file name
+  if (file) {
+    console.log(event.target.tagName)
+    if (event.target.tagName === 'P') {
+      event.target.textContent = file.name
+    } else {
+      event.target.querySelector('p').textContent = file.name
+    }
+  }
+})

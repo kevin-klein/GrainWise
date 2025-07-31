@@ -21,4 +21,6 @@ class Grain < ApplicationRecord
   belongs_to :lateral, class_name: "GrainFigure", foreign_key: "lateral_id", optional: true
   belongs_to :ventral, class_name: "GrainFigure", foreign_key: "ventral_id", optional: true
   belongs_to :ts, class_name: "GrainFigure", foreign_key: "ts_id", optional: true
+
+  belongs_to :upload
 end
