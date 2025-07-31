@@ -100,7 +100,7 @@ function Pagination ({ page, setPage, pagination }) {
       <ul className='pagination'>
         <li className='page-item'><a className='page-link' href='#'>Previous</a></li>
         {pages.map(currentPage => (
-          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' href='#'>{currentPage}</a></li>
+          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' onClick={() => setPage(currentPage)} href='#'>{currentPage}</a></li>
         ))}
         <li className='page-item'><a className='page-link' href='#'>Next</a></li>
       </ul>
@@ -119,7 +119,6 @@ function defaultGrainView (grain) {
 }
 
 function ViewTabs ({ grain, onUpdateGrains }) {
-  console.log(grain)
   const [view, setView] = React.useState(defaultGrainView(grain))
 
   const figure = grain[view]
@@ -137,7 +136,7 @@ function ViewTabs ({ grain, onUpdateGrains }) {
           <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={() => setView('ventral')} aria-current='page' href='#'>Ventral</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={() => setView('ts')} aria-current='page' href='#'>T.S.</a>
+          <a className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={() => setView('ts')} aria-current='page' href='#'>T.S.</a>
         </li>
       </ul>
 
@@ -151,9 +150,13 @@ function ViewTabs ({ grain, onUpdateGrains }) {
 }
 
 export default function GrainList (params) {
+  const urlParams = new URL(document.location.toString()).searchParams
+  const urlSiteId = urlParams.get("site_id")
+
+
   const [page, setPage] = React.useState(1)
   const [selected, setSelected] = React.useState(null)
-  const [site, setSite] = React.useState(undefined)
+  const [site, setSite] = React.useState(urlSiteId)
   const [species, setSpecies] = React.useState(undefined)
   const { grains, isLoading, isError, mutate } = useGrains({ page, site, species })
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_05_07_110418) do
+ActiveRecord::Schema[7.0].define(version: 2025_06_27_114935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -168,6 +168,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_05_07_110418) do
     t.string "identifier"
     t.bigint "lateral_id"
     t.bigint "ts_id"
+    t.boolean "complete"
+    t.boolean "validated"
     t.index ["dorsal_id"], name: "index_grains_on_dorsal_id"
     t.index ["lateral_id"], name: "index_grains_on_lateral_id"
     t.index ["site_id"], name: "index_grains_on_site_id"
