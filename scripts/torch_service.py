@@ -21,7 +21,7 @@ sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
 sam.eval()
 
-labels = torch.load('models/retinanet_v2_labels.model', weights_only=True)
+labels = torch.load('models/rcnn_labels.model', weights_only=True)
 labels = {v: k for k, v in labels.items()}
 
 # if torch.cuda.is_available():

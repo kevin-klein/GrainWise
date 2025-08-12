@@ -1,3 +1,3 @@
 FROM postgres
 
-ADD autarch.sql /docker-entrypoint-initdb.d
+ADD grain.sql /docker-entrypoint-initdb.d
