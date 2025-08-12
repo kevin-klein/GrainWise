@@ -19,15 +19,6 @@ services:
     tmpfs:
       - /tmp/pids
 
-  # sidekiq:
-  #   volumes:
-  #     - ./images:/dfg/images
-  #     - ./storage:/dfg/storage
-  #   build: '.'
-  #   command: bundle exec sidekiq
-  #   env_file:
-  #     - .env
-
   redis:
     image: "redis:alpine"
   db:
