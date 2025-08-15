@@ -17,8 +17,8 @@ class Upload < ApplicationRecord
   has_many :figures, through: :upload_items
   has_many :grains
 
-  belongs_to :site, optional: true
-  belongs_to :strain, optional: true
+  belongs_to :site
+  belongs_to :strain
 
   has_one_attached :zip
 

@@ -2,20 +2,20 @@ services:
   ml-services:
     image: "kevin1252/ml-grain-wise:latest"
     env_file:
-      - .env
+      - env
     volumes:
       - ./models:/ml-services/models
 
   web:
     # build: .
-    image: 'kevin1252/grain-wise:latest'
+    image: 'kevin1252/grain-wise:1.1'
     volumes:
       - ./images:/dfg/images
       - ./storage:/dfg/storage
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - env
     tmpfs:
       - /tmp/pids
 

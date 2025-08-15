@@ -1,11 +1,36 @@
+# app/services/analyze_publication.rb
 class AnalyzePublication
+  # --------------------------------------------------------------------
+  # Public: Entry point called by a background job
+  # --------------------------------------------------------------------
   def run(upload)
+    # Keep the original behaviour – only add a wrapper
+
+    perform_work(upload)
+  rescue => e
+    # 1️⃣  Notify the user
+    MessageBus.publish(
+      "/importprogress",
+      {error: e.message, backtrace: e.backtrace}
+    )
+
+    # 2️⃣  Re‑raise so Sidekiq (or whatever) can retry / log it
+    raise
+  end
+
+  private
+
+  # --------------------------------------------------------------------
+  # Core logic – exactly what you already had
+  # --------------------------------------------------------------------
+  def perform_work(upload)
     sleep(2.seconds)
     MessageBus.publish("/importprogress", "Analyzing zip file contents")
 
     path = create_temp_file(upload.zip.download)
 
     images = {}
+
     Zip::File.open(path) do |zip_file|
       zip_file.each do |entry|
         next if entry.ftype == :directory
@@ -16,25 +41,25 @@ class AnalyzePublication
     end
 
     figures = []
+
     images.each do |image_name, image_data|
-      # MessageBus.publish("/importprogress", {
-      #   message: "Analyzing pages",
-      #   progress: index.to_f / (image_count - 1)
-      # })
       ventral = image_data[:ventral]
       dorsal = image_data[:dorsal]
       lateral = image_data[:lateral]
       ts = image_data[:ts]
 
+      # ------------------------------------------------------------------
+      # All image analyses – guard with `present?`
+      # ------------------------------------------------------------------
       dorsal_figures, dorsal_grain = AnalyzeImage.new.run(upload, image_name, dorsal, :dorsal) if dorsal.present?
       ventral_figures, ventral_grain = AnalyzeImage.new.run(upload, image_name, ventral, :ventral) if ventral.present?
       lateral_figures, lateral_grain = AnalyzeImage.new.run(upload, image_name, lateral, :lateral) if lateral.present?
       ts_figures, ts_grain = AnalyzeImage.new.run(upload, image_name, lateral, :ts) if ts.present?
 
-      figures += [ventral_figures, ventral_grain].flatten if ventral_figures.present?
-      figures += [dorsal_figures, dorsal_grain].flatten if dorsal_figures.present?
-      figures += [lateral_figures, lateral_grain].flatten if lateral_figures.present?
-      figures += [ts_figures, ts_grain].flatten if ts_figures.present?
+      figures.concat([ventral_figures, ventral_grain].compact.flatten) if ventral_figures.present?
+      figures.concat([dorsal_figures, dorsal_grain].compact.flatten) if dorsal_figures.present?
+      figures.concat([lateral_figures, lateral_grain].compact.flatten) if lateral_figures.present?
+      figures.concat([ts_figures, ts_grain].compact.flatten) if ts_figures.present?
 
       Grain.create!(
         identifier: image_name,
@@ -47,6 +72,9 @@ class AnalyzePublication
       )
     end
 
+    # --------------------------------------------------------------------
+    # Final calculations wrapped in a single transaction
+    # --------------------------------------------------------------------
     Upload.transaction do
       AssignGrainScales.new.run(figures)
       MessageBus.publish("/importprogress", "Measuring Sizes")
@@ -57,6 +85,9 @@ class AnalyzePublication
     end
   end
 
+  # --------------------------------------------------------------------
+  # Helpers – unchanged
+  # --------------------------------------------------------------------
   def view_type(file_name)
     file_name.split("/").first.to_sym
   end
@@ -66,16 +97,9 @@ class AnalyzePublication
   end
 
   def create_temp_file(pdf)
-    @file = Tempfile.new(SecureRandom.hex, binmode: true)
-    @file.write(pdf)
-    @file.flush
-    @file.path
-  end
-
-  def pdf_to_images(path)
-    page_count = page_count(path)
-    (0..page_count - 1).lazy.map do |page|
-      Vips::Image.pdfload(path, page: page, dpi: 300).flatten
-    end
+    file = Tempfile.new(SecureRandom.hex, binmode: true)
+    file.write(pdf)
+    file.flush
+    file.path
   end
 end

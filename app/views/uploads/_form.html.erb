@@ -11,9 +11,19 @@
 
     <%= f.input :name %>
 
-    <%= f.input :strain_id, collection: Strain.order(:name).pluck(:name, :id), label: 'Species' %>
+    <!-- Species select – must pick one -->
+    <%= f.input :strain_id,
+                collection: Strain.order(:name).pluck(:name, :id),
+                label:      'Species',
+                prompt:     'Select a species',
+                required:   true %>
 
-    <%= f.input :site, collection: Site.order(:name).pluck(:name, :id) %>
+    <!-- Site select – must pick one -->
+    <%= f.input :site,
+                collection: Site.order(:name).pluck(:name, :id),
+                label:      'Site',
+                prompt:     'Select a site',
+                required:   true %>
 
     <%= f.submit(class: "btn btn-primary") %>
 
