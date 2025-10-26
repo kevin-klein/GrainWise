@@ -44,48 +44,14 @@ export function Box ({ onChangeFigure, onDraggingStart, active, figure, setActiv
 
   return (
     <>
-      {(typeName === 'Spine') &&
-        <>
-          <Arrow
-            fill={null}
-            stroke={color}
-            strokeWidth={3}
-            points={[x1, y1, x2, y2]}
-            ref={shapeRef}
-            onClick={() => setActive(id)}
-            onTap={() => setActive(id)}
-          />
-          <Circle
-            x={x1}
-            y={y1}
-            radius={10}
-            stroke={color}
-            draggable
-            onDragMove={e => {
-              onChangeFigure(figure.id, {
-                ...figure,
-                x1: e.target.x(),
-                y1: e.target.y()
-              })
-            }}
-          />
-          <Circle
-            x={x2}
-            y={y2}
-            radius={10}
-            stroke={color}
-            draggable
-            onDragMove={e => {
-              onChangeFigure(figure.id, {
-                ...figure,
-                x2: e.target.x(),
-                y2: e.target.y()
-              })
-            }}
-          />
-        </>}
+      <Line
+        points={figure.contour?.map(([x, y]) => [figure.x1 + x, figure.y1 + y]).flat()}
+        closed
+        fill='red'
+        stroke='transparent'
+      />
 
-      {typeName !== 'Spine' && <Rect
+      <Rect
         fill={null}
         ref={shapeRef}
         stroke={color}
@@ -116,7 +82,7 @@ export function Box ({ onChangeFigure, onDraggingStart, active, figure, setActiv
             y2: node.y() + height
           })
         }}
-                               />}
+      />
 
       {isSelected && typeName !== 'Spine' && (
         <Transformer
@@ -253,6 +219,9 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
       document.querySelector('[name=csrf-token]').content
 
   function currentEditBoxActiveClass (figure) {
+    if (figure === undefined) {
+      return ''
+    }
     if (figure.id === currentFigure) {
       return ' active'
     }
@@ -330,7 +299,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
   async function createFigure (type) {
     let newFigure = null
 
-    newFigure = { typeName: type, page_id: page.id, x1: 0, y1: 0, x2: 100, y2: 100 }
+    newFigure = { typeName: type, grain_figure_id: grain.id, x1: 0, y1: 0, x2: 100, y2: 100 }
 
     const response = await fetch('/figures.json', {
       method: 'POST',
@@ -340,9 +309,10 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
           x2: newFigure.x2,
           y1: newFigure.y1,
           y2: newFigure.y2,
-          page_id: newFigure.page_id,
           type: newFigure.typeName,
-          parent_id: grain.id
+          parent_id: grain.id,
+          upload_item_id: grain.upload_item_id,
+          upload_id: grain.upload_id
         }
       }),
       headers: {
@@ -352,6 +322,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
     })
     if (response.ok) {
       newFigure = await response.json()
+      console.log(newFigure)
       setCurrentScale(newFigure)
       setCurrentFigure(newFigure.id)
     } else {
@@ -407,7 +378,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
             setCurrentFigure={setCurrentFigure}
             divRef={divRef}
             image={image}
-            figures={[currentScale]}
+            figures={currentScale !== undefined ? [currentScale] : []}
             onDraggingStart={onDraggingStart}
             currentEditBox={currentFigure}
             onChangeFigure={onChangeFigure}
@@ -434,14 +405,17 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                 </table>
 
                 <ul className='list-group'>
-                  <div
-                    onClick={() => { setCurrentFigure(currentScale.id) }}
-                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
-                  >
-                    <div className='ms-2 me-auto'>
-                      <div className='fw-bold'>Scale</div>
+                  {scale !== undefined && (
+                    <div
+                      onClick={() => { setCurrentFigure(currentScale.id) }}
+                      className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
+                    >
+                      <div className='ms-2 me-auto'>
+                        <div className='fw-bold'>Scale</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
                   <div
                     onClick={() => { setCurrentFigure(currentScale.id) }}
                     className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(grain)}`}
@@ -456,7 +430,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                         className='form-check-input disabled'
                         type='checkbox'
                         disabled
-                        checked={scale.manual_bounding_box}
+                        checked={scale?.manual_bounding_box}
                         onChange={(evt) => { setManualBoundingBox(scale, evt.target.checked) }}
                       />
                       <label className='form-check-label'>
@@ -467,7 +441,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                   <a
                     href='#'
                     onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
-                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentScale !== null ? 'disabled' : ''}`}
+                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentScale !== undefined ? 'disabled' : ''}`}
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>New Figure</div>

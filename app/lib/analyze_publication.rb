@@ -96,10 +96,14 @@ class AnalyzePublication
     file_name.split("/")[1..].join("").split(".")[0...-1].join("")
   end
 
-  def create_temp_file(pdf)
-    file = Tempfile.new(SecureRandom.hex, binmode: true)
-    file.write(pdf)
-    file.flush
-    file.path
+  def create_temp_file(data)
+    # file = File.new(SecureRandom.hex, binmode: true)
+    # file.write(pdf)
+    # file.flush
+    # file.path
+
+    path = "#{Rails.root}/tmp/#{SecureRandom.hex}.zip"
+    File.binwrite(path, data)
+    path
   end
 end

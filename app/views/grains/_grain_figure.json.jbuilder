@@ -1,9 +1,11 @@
 json.width number_with_unit(grain.width_with_unit)
 json.height number_with_unit(grain.height_with_unit)
-json.extract! grain, :id, :identifier, :contour, :upload_item_id
+json.extract! grain, :id, :identifier, :contour, :upload_item_id, :upload_id
 
-json.scale do
-  json.extract! grain.scale, :id, :type, :x1, :x2, :y1, :y2, :upload_item_id if grain.scale.present?
+if grain.scale.present?
+  json.scale do
+    json.extract! grain.scale, :id, :type, :x1, :x2, :y1, :y2, :contour, :upload_item_id if grain.scale.present?
+  end
 end
 
 json.image do

@@ -36,17 +36,17 @@ class AnalyzeScales
   end
 
   def calculate_contour_ratio(scale, text)
-    if text.empty?
+    # if text.empty?
       distance = 1.0 # assume default 1mm
-    else
-      cm_match = text.match(/([0-9]+)cm$/)
-      mm_match = text.match(/([0-9]+)mm$/)
-      distance = if cm_match
-        cm_match.captures[0].to_f * 10
-      elsif mm_match
-        mm_match.captures[0].to_f
-      end
-    end
+    # else
+    #   cm_match = text.match(/([0-9]+)cm$/)
+    #   mm_match = text.match(/([0-9]+)mm$/)
+    #   distance = if cm_match
+    #     cm_match.captures[0].to_f * 10
+    #   elsif mm_match
+    #     mm_match.captures[0].to_f
+    #   end
+    # end
 
     ratio = if distance.present?
       distance / scale.width
@@ -62,9 +62,11 @@ class AnalyzeScales
 
     return if rects.empty?
 
+    contour = contours[rects.each_with_index.max_by { [_1[0][:width], _1[0][:height]].max }[1]]
     max_rect = rects.max_by { [_1[:width], _1[:height]].max }
     width = [max_rect[:width], max_rect[:height]].max
 
+    scale.contour = contour
     scale.width = width
     scale.save!
   end
