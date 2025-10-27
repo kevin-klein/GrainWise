@@ -149,7 +149,7 @@ function ViewTabs ({ grain, onUpdateGrains }) {
   // ventral: length/width
 }
 
-export default function GrainList (params) {
+export default function GrainList ({export_grains_path, export_outlines_grains_path}) {
   const urlParams = new URL(document.location.toString()).searchParams
   const urlSiteId = urlParams.get('site_id')
 
@@ -176,6 +176,10 @@ export default function GrainList (params) {
 
   return (
     <div className='row'>
+      <div className='col-md-12'>
+        <a className="btn btn-success mb-4 me-3" href={export_grains_path + `?site_id=${site}&species_id=${species}`}>Export Data</a>
+        <a className="btn btn-success mb-4" href={export_outlines_grains_path + `?site_id=${site}&species_id=${species}`}>Export Outlines</a>
+      </div>
       <div className='col-md-12 mb-2'>
         <GrainFilter site={site} setSite={setSite} />
         <SpeciesFilter species={species} setSpecies={setSpecies} />

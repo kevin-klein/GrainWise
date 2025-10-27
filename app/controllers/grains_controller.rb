@@ -1,64 +1,23 @@
 class GrainsController < AuthorizedController
   before_action :set_grain, only: %i[show edit update destroy]
+  before_action :set_grains, only: %i[index export export_outlines]
 
   # GET /graves or /graves.json
   def index
-    @grains = Grain.all
-    # if params.dig(:search, :publication_id).present?
-    #   grains = Grave
-    #     .joins(page: :publication)
-    #     .where({publication: {id: params.dig(:search, :publication_id)}})
-    # end
-
-    # @grains = grains
-    #   .includes(:scale, :site, :upload, upload_item: :image)
-
-    if params[:site_id].present? && params[:site_id] != "undefined" && params[:site_id] != "null"
-      @grains = @grains.where(site_id: params[:site_id])
-    end
-
-    if params[:species_id].present? && params[:species_id] != "undefined"
-      @grains = @grains.where(strain_id: params[:species_id])
-    end
-
-    # @grains = if params[:sort] == "area:desc"
-    #   @grains.order("real_world_area DESC NULLS LAST")
-    # elsif params[:sort] == "area:asc"
-    #   @grains.order("real_world_area ASC NULLS LAST")
-    # elsif params[:sort] == "perimeter:asc"
-    #   @grains.order("real_world_perimeter ASC NULLS LAST")
-    # elsif params[:sort] == "perimeter:desc"
-    #   @grains.order("real_world_perimeter DESC NULLS LAST")
-    # elsif params[:sort] == "width:desc"
-    #   @grains.order("real_world_width DESC NULLS LAST")
-    # elsif params[:sort] == "width:asc"
-    #   @grains.order("real_world_width ASC NULLS LAST")
-    # elsif params[:sort] == "length:asc"
-    #   @grains.order("real_world_height ASC NULLS LAST")
-    # elsif params[:sort] == "length:desc"
-    #   @grains.order("real_world_height DESC NULLS LAST")
-    # elsif params[:sort] == "id:asc"
-    #   @grains.order("id ASC NULLS LAST")
-    # elsif params[:sort] == "id:desc"
-    #   @grains.order("id DESC NULLS LAST")
-    # elsif params[:sort] == "depth:desc"
-    #   @grains.order("real_world_depth DESC NULLS LAST")
-    # elsif params[:sort] == "depth:asc"
-    #   @grains.order("real_world_depth DESC NULLS LAST")
-    # elsif params[:sort] == "site:asc"
-    #   @grains.joins(:site).reorder("sites.name ASC NULLS LAST")
-    # elsif params[:sort] == "site:desc"
-    #   @grains.joins(:site).reorder("sites.name DESC NULLS LAST")
-    # elsif params[:sort] == "publication:asc"
-    #   @grains.joins(:publication).reorder("publications.author ASC NULLS LAST")
-    # elsif params[:sort] == "publication:desc"
-    #   @grains.joins(:publication).reorder("publications.author DESC NULLS LAST")
-    # else
-    #   @grains.reorder("figures.created_at")
-    # end
-
     @grains_pagy, @grains = pagy(@grains)
     @pagination = pagy_metadata(@grains_pagy)
+  end
+
+  def export_outlines
+    csv_data = CSV.generate do |csv|
+      figures = @grains.map { [_1.dorsal, _1.lateral, _1.ventral, _1.ts] }.flatten.compact
+
+      figures.each do |figure|
+        contour = figure.contour.chunk_while { |a, b| a == b }.map(&:first)
+        csv << ["#{figure.grain.identifier} - #{figure.view}", contour].flatten
+      end
+    end
+    send_data csv_data, filename: "outlines.csv"
   end
 
   def export
@@ -166,6 +125,17 @@ class GrainsController < AuthorizedController
   # Use callbacks to share common setup or constraints between actions.
   def set_grain
     @grain = Grain.find(params[:id])
+  end
+
+  def set_grains
+    @grains = Grain.all
+    if params[:site_id].present? && params[:site_id] != "undefined" && params[:site_id] != "null"
+      @grains = @grains.where(site_id: params[:site_id])
+    end
+
+    if params[:species_id].present? && params[:species_id] != "undefined"
+      @grains = @grains.where(strain_id: params[:species_id])
+    end
   end
 
   # Only allow a list of trusted parameters through.

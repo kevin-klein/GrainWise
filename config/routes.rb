@@ -9,6 +9,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     collection do
       get :stats
       get :export
+      get :export_outlines
       get :orientations
     end
   end
