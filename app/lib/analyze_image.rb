@@ -34,6 +34,22 @@ class AnalyzeImage
     [figures, grain]
   end
 
+  def get_contours(figure, control_points: nil)
+    image = figure.upload_item.image
+    image = Vips::Image.new_from_buffer(image.data, "")
+    image_data = image.write_to_buffer(".jpg")
+    segment(image_data, control_points: control_points)
+  end
+
+  def update_contour(figure, control_points: nil)
+    contour_response = get_contours(figure, control_points: control_points)
+    contour = contour_response["contour"].map do |item|
+      item.flatten
+    end
+    figure.contour = contour
+    figure.save!
+  end
+
   def predict_boxes(image)
     io = StringIO.new(image)
     file = HTTP::FormData::File.new io, filename: "page.jpg"
@@ -44,12 +60,17 @@ class AnalyzeImage
     response.parse["predictions"]
   end
 
-  def segment(image)
+  def segment(image, control_points: nil)
     io = StringIO.new(image)
     file = HTTP::FormData::File.new io, filename: "page.jpg"
-    response = HTTP.post("#{ENV["ML_SERVICE_URL"]}/segment", form: {
+    form = {
       image: file
-    })
+    }
+    if control_points.present?
+      form[:control_points] = control_points.to_json
+    end
+
+    response = HTTP.post("#{ENV["ML_SERVICE_URL"]}/segment", form: form)
 
     response.parse["predictions"]
   end

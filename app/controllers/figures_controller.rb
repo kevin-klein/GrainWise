@@ -1,6 +1,6 @@
 class FiguresController < AuthorizedController
   skip_forgery_protection
-  before_action :set_figure, only: %i[show edit preview update destroy]
+  before_action :set_figure, only: %i[show edit preview update destroy update_contour]
 
   # GET /figures or /figures.json
   def index
@@ -33,7 +33,6 @@ class FiguresController < AuthorizedController
 
     respond_to do |format|
       if @figure.save
-        AnalyzeScales.new.run([@figure])
         format.html { redirect_to figure_url(@figure), notice: "Figure was successfully created." }
         format.json { render json: @figure }
       else
@@ -61,6 +60,15 @@ class FiguresController < AuthorizedController
         format.json { render json: @figure.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def update_contour
+    points = params[:controlPoints]
+
+    AnalyzeImage.new.update_contour(@figure, control_points: points)
+    GraveSize.new.run([@figure])
+
+    render json: {errorcode: 0}
   end
 
   # DELETE /figures/1 or /figures/1.json

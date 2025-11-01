@@ -6,7 +6,9 @@ module UnitAccessor
   module ClassMethods
     def with_unit(name, square: false)
       define_method(:"#{name}_with_unit") do
-        if scale.present? && scale.milli_meter_ratio&.positive?
+        if upload.scale_pixels.present? && upload.scale_mm_distance.present?
+          {value: send(name) / upload.scale_pixels, unit: "mm"}
+        elsif scale.present? && scale.milli_meter_ratio&.positive?
           ratio = scale.milli_meter_ratio
           ratio = scale.milli_meter_ratio**2 if square
           return {value: 0, unit: "px"} if send(name).nil?

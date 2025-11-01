@@ -7,7 +7,9 @@ import numpy as np
 import io
 # from segment_anything import sam_model_registry, SamPredictor
 from mobile_sam import sam_model_registry, SamPredictor
+import json
 import cv2
+import os
 
 sam_checkpoint = "models/mobile_sam.pt"
 # sam_checkpoint = "models/sam_vit_b_01ec64.pth"
@@ -71,6 +73,27 @@ def upload():
 
     return { 'predictions': result }
 
+def save_masks_as_images(masks, output_dir="masks_out"):
+    """
+    Save all boolean masks to image files.
+    Args:
+        masks: np.ndarray or torch.Tensor of shape (N, H, W), dtype=bool
+        output_dir: folder to save the images
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Convert PyTorch tensor to NumPy if needed
+    if isinstance(masks, torch.Tensor):
+        masks = masks.cpu().numpy()
+
+    for i, mask in enumerate(masks):
+        # Convert boolean mask (True/False) to 0–255 grayscale image
+        img = (mask.astype(np.uint8)) * 255
+        im = Image.fromarray(img, mode="L")
+        im.save(os.path.join(output_dir, f"mask_{i:03d}.png"))
+
+    print(f"Saved {len(masks)} masks to '{output_dir}/'")
+
 @app.post('/segment')
 def upload_grain_for_segmentation():
     upload_file = request.POST['image']
@@ -83,14 +106,21 @@ def upload_grain_for_segmentation():
     predictor = SamPredictor(sam)
     predictor.set_image(open_cv_image)
 
-    input_point = np.array([[width / 2, height / 2]])
-    input_label = np.array([1])
+    if 'control_points' in request.POST:
+        points = json.loads(request.POST['control_points'])
+        input_point = np.array(points)
+        input_label = np.array([1] * len(points))
+    else:
+        input_point = np.array([[width / 2, height / 2]])
+        input_label = np.array([1])
 
     masks, scores, logits = predictor.predict(
         point_coords=input_point,
         point_labels=input_label,
         multimask_output=True,
     )
+
+    save_masks_as_images(masks)
 
     max_score_index = np.argmax(scores)
     mask = masks[max_score_index]

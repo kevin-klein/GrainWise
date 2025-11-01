@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_07_31_074449) do
+ActiveRecord::Schema[7.0].define(version: 2025_11_01_133359) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -168,9 +168,9 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_31_074449) do
     t.string "identifier"
     t.bigint "lateral_id"
     t.bigint "ts_id"
+    t.bigint "upload_id"
     t.boolean "complete"
     t.boolean "validated"
-    t.bigint "upload_id"
     t.index ["dorsal_id"], name: "index_grains_on_dorsal_id"
     t.index ["lateral_id"], name: "index_grains_on_lateral_id"
     t.index ["site_id"], name: "index_grains_on_site_id"
@@ -313,6 +313,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_07_31_074449) do
     t.integer "view"
     t.string "feature"
     t.string "sample"
+    t.integer "scale_pixels"
+    t.decimal "scale_mm_distance"
     t.index ["user_id"], name: "index_uploads_on_user_id"
   end
 

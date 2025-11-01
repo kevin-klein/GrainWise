@@ -136,7 +136,7 @@ function NewFigureDialog ({ closeDialog, addFigure }) {
   )
 }
 
-function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBox, setCurrentFigure, onChangeFigure }) {
+function Canvas ({ controlPoints, setControlPoints, divRef, image, figures, grain, onDraggingStart, currentEditBox, setCurrentFigure, onChangeFigure }) {
   const [dimensions, setDimensions] = React.useState({
     width: 0,
     height: 0
@@ -189,6 +189,22 @@ function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBo
           image={imageNode}
           x={0}
           y={0}
+          onClick={(evt) => {
+            const stage = evt.target.getStage()
+            const pointerPosition = stage.getPointerPosition()
+            if (!pointerPosition) return // defensive
+
+            // get stage transform info using Konva getters
+            const stageX = stage.x()
+            const stageY = stage.y()
+            const scale = stage.scaleX() // assume scaleX === scaleY
+
+            // invert the stage transform to get image-local coordinates
+            const imageClickX = (pointerPosition.x - stageX) / scale
+            const imageClickY = (pointerPosition.y - stageY) / scale
+
+            setControlPoints(prev => [...prev, [imageClickX, imageClickY]])
+          }}
         />
         <Line
           x={0}
@@ -196,8 +212,10 @@ function Canvas ({ divRef, image, figures, grain, onDraggingStart, currentEditBo
           points={grain.contour.flat()}
           closed
           fill='#3F51B588'
+          listening={false}
           stroke='black'
         />
+        {controlPoints.map((point, index) => <Circle onClick={() => setControlPoints(controlPoints.filter(controlPoint => controlPoint !== point))} key={index} x={point[0]} y={point[1]} radius={20} fill='red' />)}
         {Object.values(figures).map(figure => <Box onChangeFigure={onChangeFigure} canvas={null} key={figure.id} onDraggingStart={onDraggingStart} setActive={setCurrentFigure} active={currentEditBox} figure={figure} />)}
       </Layer>
     </Stage>
@@ -210,6 +228,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
   const [rendering, setRendering] = React.useState('boxes')
   const [draggingState, setDraggingState] = React.useState(null)
   const [creatingNewFigure, setCreatingNewFigure] = React.useState(false)
+  const [controlPoints, setControlPoints] = React.useState([])
 
   const [currentScale, setCurrentScale] = React.useState(scale)
 
@@ -240,7 +259,7 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
       }
     })
     if (response.ok) {
-      removeFigure(figures[id])
+      setCurrentScale(null)
     } else {
       return Promise.reject(response)
     }
@@ -368,6 +387,24 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
     labels = ['Thickness', 'Length']
   }
 
+  async function onUpdateContour () {
+    const response = await fetch(`/figures/${grain.id}/update_contour.json`, {
+      method: 'POST',
+      body: JSON.stringify({
+        controlPoints
+      }),
+      headers: {
+        'X-CSRF-Token': token,
+        'Content-Type': 'application/json'
+      }
+    })
+    if (response.ok) {
+      onUpdateGrains()
+    } else {
+      return Promise.reject(response)
+    }
+  }
+
   return (
     <>
       {creatingNewFigure && <NewFigureDialog addFigure={createFigure} closeDialog={() => setCreatingNewFigure(false)} />}
@@ -378,6 +415,8 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
             setCurrentFigure={setCurrentFigure}
             divRef={divRef}
             image={image}
+            controlPoints={controlPoints}
+            setControlPoints={setControlPoints}
             figures={currentScale !== undefined ? [currentScale] : []}
             onDraggingStart={onDraggingStart}
             currentEditBox={currentFigure}
@@ -411,7 +450,14 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                       className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentEditBoxActiveClass(scale)}`}
                     >
                       <div className='ms-2 me-auto'>
-                        <div className='fw-bold'>Scale</div>
+                        <div className='row'>
+                          <div className='col-md-4'>
+                            Scale
+                          </div>
+                          <div className='col-md-8'>
+                            <button className='btn btn-warning' onClick={() => removeEditBox(currentScale.id)}>Remove</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -450,6 +496,8 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                 </ul>
               </div>
               <input value='Save' onClick={(evt) => { evt.preventDefault(); onUpdateFigure() }} type='submit' className='btn btn-primary card-link mt-1' />
+              <input value='Update Contour' onClick={(evt) => { evt.preventDefault(); onUpdateContour() }} type='submit' className='btn btn-primary card-link mt-1' />
+              <input value='Delete' onClick={(evt) => { evt.preventDefault(); onUpdateFigure() }} type='submit' className='btn btn-warning card-link mt-1' />
             </div>
           </div>
         </div>

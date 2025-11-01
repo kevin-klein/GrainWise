@@ -15,6 +15,7 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   end
   resources :figures do
     member do
+      post :update_contour
       get :preview
     end
   end

@@ -76,11 +76,12 @@ class AnalyzePublication
     # Final calculations wrapped in a single transaction
     # --------------------------------------------------------------------
     Upload.transaction do
-      AssignGrainScales.new.run(figures)
+      upload.reload
+      AssignGrainScales.new.run(upload.figures)
       MessageBus.publish("/importprogress", "Measuring Sizes")
-      GraveSize.new.run(figures)
+      GraveSize.new.run(upload.figures)
       MessageBus.publish("/importprogress", "Analyzing Scales")
-      AnalyzeScales.new.run(figures)
+      AnalyzeScales.new.run(upload.figures)
       MessageBus.publish("/importprogress", "Done. Please proceed to Grains in the NavBar.")
     end
   end

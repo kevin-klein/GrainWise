@@ -143,18 +143,12 @@ class UploadsController < AuthorizedController
 
   # POST /publications or /publications.json
   def create # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-    name = publication_params[:name]
-    if name.empty?
-      name = publication_params[:zip].original_filename.gsub(".pdf", "")
-    end
+    # name = upload_params[:name]
+    # if name.empty?
+    #   name = upload_params[:zip].original_filename.gsub(".pdf", "")
+    # end
 
-    @upload = Upload.new({
-      name: name,
-      site_id: publication_params[:site],
-      strain_id: publication_params[:strain_id],
-      view: publication_params[:view],
-      zip: publication_params[:zip]
-    })
+    @upload = Upload.new(upload_params)
 
     respond_to do |format|
       if @upload.save
@@ -164,6 +158,7 @@ class UploadsController < AuthorizedController
           redirect_to progress_upload_path(@upload)
         end
       else
+        raise
         format.html { render :new, status: :unprocessable_entity }
       end
     end
@@ -175,8 +170,9 @@ class UploadsController < AuthorizedController
   # PATCH/PUT /publications/1 or /publications/1.json
   def update
     respond_to do |format|
-      if @publication.update(publication_params)
-        format.html { redirect_to publications_path, notice: "Publication was successfully updated." }
+      if @upload.update(upload_params)
+        @upload.grains.update_all(strain_id: upload_params[:strain_id])
+        format.html { redirect_to uploads_path, notice: "Upload was successfully updated." }
         format.json { render :show, status: :ok, location: @publication }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -211,7 +207,7 @@ class UploadsController < AuthorizedController
   end
 
   # Only allow a list of trusted parameters through.
-  def publication_params
-    params.require(:upload).permit(:zip, :name, :site, :strain_id, :view)
+  def upload_params
+    params.require(:upload).permit(:zip, :name, :site_id, :strain_id, :scale_mm_distance, :scale_pixels)
   end
 end

@@ -102,7 +102,7 @@ function Pagination ({ page, setPage, pagination }) {
         {pages.map(currentPage => (
           <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' onClick={() => setPage(currentPage)} href='#'>{currentPage}</a></li>
         ))}
-        <li className='page-item'><a className='page-link' href='#'>Next</a></li>
+        <li className='page-item'><a className='page-link' href='#' onClick={(evt) => { evt.preventDefault(); setPage(page + 1)} }>Next</a></li>
       </ul>
     </nav>
   )

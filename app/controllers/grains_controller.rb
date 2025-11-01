@@ -21,7 +21,7 @@ class GrainsController < AuthorizedController
   end
 
   def export
-    table = TableBuilder.new.build(Grain.all)
+    table = TableBuilder.new.build(@grains)
 
     send_data table, filename: "grains.csv"
   end
@@ -128,7 +128,7 @@ class GrainsController < AuthorizedController
   end
 
   def set_grains
-    @grains = Grain.all
+    @grains = Grain.order(:identifier)
     if params[:site_id].present? && params[:site_id] != "undefined" && params[:site_id] != "null"
       @grains = @grains.where(site_id: params[:site_id])
     end
