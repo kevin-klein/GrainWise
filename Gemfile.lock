@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/kevin-klein/ruby-minopencv.git
-  revision: a5e3469ddeecf5c847510067e077bb5c329eb6d5
+  revision: ab9e0766044e9ecb77b99985546c3e2d7ed2ddc1
   specs:
     minopencv (0.1.0)
 
@@ -597,7 +597,7 @@ DEPENDENCIES
   xlsxtream
 
 RUBY VERSION
-   ruby 3.1.6p260
+   ruby 3.2.9p265
 
 BUNDLED WITH
    2.3.27

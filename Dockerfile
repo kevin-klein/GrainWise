@@ -1,4 +1,7 @@
-FROM ruby:3.1.6 as builder
+FROM ubuntu:22.04 AS builder
+
+ENV TZ=Europe/Berlin \
+    DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -qq
 RUN apt-get install -y git libpq-dev libopencv-dev tesseract-ocr libvips42 build-essential wget libmagickwand-dev
@@ -20,20 +23,20 @@ RUN asdf install
 RUN npm install -g yarn
 
 
-FROM builder as bundler
+FROM builder AS bundler
 WORKDIR /tmp
 RUN gem install bundler
 COPY Gemfile /tmp/
 COPY Gemfile.lock /tmp/
 RUN bundle install
 
-FROM node:18-bullseye-slim as yarn
+FROM node:18-bullseye-slim AS yarn
 WORKDIR /tmp
 COPY package.json .
 COPY yarn.lock .
 RUN yarn install
 
-FROM builder as assets
+FROM builder AS assets
 WORKDIR /tmp
 COPY --from=bundler /usr/local/bundle /usr/local/bundle
 COPY --from=yarn /tmp/node_modules node_modules
@@ -56,7 +59,7 @@ ENV RAILS_ENV="production" \
 
 # RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 
-FROM builder as app
+FROM builder AS app
 
 WORKDIR /dfg
 COPY app '/dfg/app'
