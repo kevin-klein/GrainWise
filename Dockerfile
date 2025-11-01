@@ -4,7 +4,7 @@ ENV TZ=Europe/Berlin \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -qq
-RUN apt-get install -y git libpq-dev libopencv-dev tesseract-ocr libvips42 build-essential wget libmagickwand-dev
+RUN apt-get install -y libyaml-dev git libreadline-dev libpq-dev libopencv-dev tesseract-ocr libvips42 build-essential wget libmagickwand-dev
 
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.15.0
 ENV PATH="$PATH:/root/.asdf/bin"
