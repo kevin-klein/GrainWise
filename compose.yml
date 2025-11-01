@@ -12,12 +12,11 @@ services:
     volumes:
       - ./images:/dfg/images
       - ./storage:/dfg/storage
+      - ./tmp:/tmp
     ports:
       - "3000:3000"
     env_file:
       - env
-    tmpfs:
-      - /tmp/pids
 
   redis:
     image: "redis:alpine"
