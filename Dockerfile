@@ -78,6 +78,7 @@ COPY Gemfile.lock .
 COPY package.json .
 COPY yarn.lock .
 COPY Rakefile .
+COPY .tool-versions .
 
 COPY --from=bundler /usr/local/bundle /usr/local/bundle
 COPY --from=assets /tmp/public public

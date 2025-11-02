@@ -1,6 +1,6 @@
 services:
   ml-services:
-    image: "kevin1252/ml-grain-wise:latest"
+    image: "kevin1252/ml-grain-wise:1.2"
     env_file:
       - env
     volumes:
@@ -8,20 +8,20 @@ services:
 
   web:
     # build: .
-    image: 'kevin1252/grain-wise:1.1'
+    image: 'kevin1252/grain-wise:1.2'
     volumes:
       - ./images:/dfg/images
       - ./storage:/dfg/storage
       - ./tmp:/tmp
     ports:
-      - "3000:3000"
+      - "9000:3000"
     env_file:
       - env
 
   redis:
     image: "redis:alpine"
   db:
-    image: "kevin1252/grain-db:latest"
+    image: "kevin1252/grain-db:1.2"
     environment:
       POSTGRES_PASSWORD: root110120
 
