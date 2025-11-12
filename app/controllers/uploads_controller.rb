@@ -143,11 +143,6 @@ class UploadsController < AuthorizedController
 
   # POST /publications or /publications.json
   def create # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-    # name = upload_params[:name]
-    # if name.empty?
-    #   name = upload_params[:zip].original_filename.gsub(".pdf", "")
-    # end
-
     @upload = Upload.new(upload_params)
 
     respond_to do |format|
@@ -158,7 +153,6 @@ class UploadsController < AuthorizedController
           redirect_to progress_upload_path(@upload)
         end
       else
-        raise
         format.html { render :new, status: :unprocessable_entity }
       end
     end
@@ -183,10 +177,10 @@ class UploadsController < AuthorizedController
 
   # DELETE /publications/1 or /publications/1.json
   def destroy
-    @publication.destroy!
+    @upload.destroy!
 
     respond_to do |format|
-      format.html { redirect_to publications_url, notice: "Publication was successfully deleted." }
+      format.html { redirect_to uploads_path, notice: "Dataset was successfully deleted." }
       format.json { head :no_content }
     end
   end

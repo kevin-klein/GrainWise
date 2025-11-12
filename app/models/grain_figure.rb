@@ -34,9 +34,9 @@
 #
 class GrainFigure < Figure
   has_one :scale, dependent: :destroy, foreign_key: "parent_id", class_name: "Scale", inverse_of: :grain_figure
-  has_one :dorsal_grain, class_name: "Grain", foreign_key: "ventral_id"
-  has_one :ventral_grain, class_name: "Grain", foreign_key: "dorsal_id"
-  has_one :lateral_grain, class_name: "Grain", foreign_key: "lateral_id"
+  has_one :dorsal_grain, class_name: "Grain", foreign_key: "ventral_id", dependent: :destroy
+  has_one :ventral_grain, class_name: "Grain", foreign_key: "dorsal_id", dependent: :destroy
+  has_one :lateral_grain, class_name: "Grain", foreign_key: "lateral_id", dependent: :destroy
 
   with_unit :area, square: true
   with_unit :perimeter

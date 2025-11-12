@@ -28,7 +28,7 @@ class StrainsController < ApplicationController
 
     respond_to do |format|
       if @strain.save
-        format.html { redirect_to @strain, notice: "Strain was successfully created." }
+        format.html { redirect_to strains_path, notice: "Species was successfully created." }
         format.json { render :show, status: :created, location: @strain }
       else
         format.html { render :new, status: :unprocessable_entity }

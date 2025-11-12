@@ -6,22 +6,32 @@ import torch
 import numpy as np
 import io
 # from segment_anything import sam_model_registry, SamPredictor
-from mobile_sam import sam_model_registry, SamPredictor
+# from mobile_sam import sam_model_registry, SamPredictor
 import json
 import cv2
 import os
+import torchvision.transforms as T
 
-sam_checkpoint = "models/mobile_sam.pt"
+from transformers import SamModel, SamProcessor, infer_device
+
+
+# sam_checkpoint = "models/mobile_sam_refined.pt"
+# sam_checkpoint = "models/mobile_sam.pt"
 # sam_checkpoint = "models/sam_vit_b_01ec64.pth"
 # model_type = "vit_b"
-model_type = 'vit_t'
+# model_type = 'vit_t'
 
 # device = "cuda"
-device = "cpu"
+device = infer_device()
 
-sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-sam.to(device=device)
-sam.eval()
+# sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+# sam.to(device=device)
+# sam.eval()
+
+sam_checkpoint = "models/slim_sam_finetuned/checkpoint-epoch25"
+
+sam = SamModel.from_pretrained(sam_checkpoint)
+processor = SamProcessor.from_pretrained(sam_checkpoint)
 
 labels = torch.load('models/rcnn_labels.model', weights_only=True)
 labels = {v: k for k, v in labels.items()}
@@ -30,12 +40,12 @@ labels = {v: k for k, v in labels.items()}
 #     device = torch.device('cuda')
 # else:
 #     device = torch.device('cpu')
-device = torch.device('cpu')
+# device = torch.device('cpu')
 
-loaded_model = get_model(num_classes = len(labels.keys()), device=device)
+# loaded_model = get_model(num_classes = len(labels.keys()), device=device)
 # loaded_model.load_state_dict(torch.load('models/retinanet_v2_dfg.model', map_location=device))
-loaded_model.eval()
-loaded_model.to(device)
+# loaded_model.eval()
+# loaded_model.to(device)
 
 app = Bottle()
 
@@ -82,14 +92,13 @@ def save_masks_as_images(masks, output_dir="masks_out"):
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    # Convert PyTorch tensor to NumPy if needed
-    if isinstance(masks, torch.Tensor):
-        masks = masks.cpu().numpy()
-
     for i, mask in enumerate(masks):
-        # Convert boolean mask (True/False) to 0–255 grayscale image
-        img = (mask.astype(np.uint8)) * 255
-        im = Image.fromarray(img, mode="L")
+        if isinstance(mask, torch.Tensor):
+            mask = mask.cpu().numpy()
+
+        print(mask.squeeze(0).shape)
+
+        im = T.ToPILImage()(mask.squeeze(0))
         im.save(os.path.join(output_dir, f"mask_{i:03d}.png"))
 
     print(f"Saved {len(masks)} masks to '{output_dir}/'")
@@ -99,44 +108,60 @@ def upload_grain_for_segmentation():
     upload_file = request.POST['image']
     request_object_content = upload_file.file.read()
     pil_image = Image.open(io.BytesIO(request_object_content))
-    open_cv_image = np.array(pil_image)
 
-    height, width, channels = open_cv_image.shape
+    height, width = pil_image.size
 
-    predictor = SamPredictor(sam)
-    predictor.set_image(open_cv_image)
+    # predictor = SamPredictor(sam)
+    # predictor.set_image(open_cv_image)
 
     if 'control_points' in request.POST:
         points = json.loads(request.POST['control_points'])
-        input_point = np.array(points)
-        input_label = np.array([1] * len(points))
+        input_point = [points]
+        # input_label = np.array([1] * len(points))
     else:
-        input_point = np.array([[width / 2, height / 2]])
-        input_label = np.array([1])
+        input_point = [[[width / 2, height / 2]]]
+        # input_label = np.array([1])
 
-    masks, scores, logits = predictor.predict(
-        point_coords=input_point,
-        point_labels=input_label,
-        multimask_output=True,
+    print(input_point)
+
+    inputs = processor(images=pil_image, input_points=input_point, return_tensors="pt")
+
+    # masks, scores, logits = predictor.predict(
+    #     point_coords=input_point,
+    #     point_labels=input_label,
+    #     multimask_output=False
+    # )
+    outputs = sam(**inputs, multimask_output=False)
+
+    masks = processor.post_process_masks(
+        outputs.pred_masks, inputs["original_sizes"], inputs["reshaped_input_sizes"]
     )
 
-    save_masks_as_images(masks)
+    masks = np.array([mask.squeeze(0).cpu().detach().numpy() for mask in masks])
 
-    max_score_index = np.argmax(scores)
-    mask = masks[max_score_index]
-    score = scores[max_score_index]
+    # save_masks_as_images(masks)
 
-    h, w = mask.shape[-2:]
-    mask = mask.reshape(h, w)
+    # mask_sizes = masks.sum(axis=(2, 3))
 
-    mask = mask.astype(dtype='uint8')
-    mask *= 255
+    # largest_idx = mask_sizes.argmax()
 
-    contours, _  = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask = masks[0]
+    # score = scores[largest_idx]
+
+
+    mask_uint8 = (mask * 255).astype(np.uint8)
+    mask_uint8 = mask_uint8.transpose(1, 2, 0)
+
+    cv2.imwrite("mask.png", mask_uint8)
+
+    # mask_uint8 = cv2.cvtColor(mask_uint8, cv2.COLOR_RGB2GRAY)
+    contours, _ = cv2.findContours(mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    contour = max(contours, key = cv2.contourArea) if len(contours) > 0 else []
 
     return { 'predictions': {
-        'score': score.item(),
-        'contour': contours[0].astype(int).tolist()
+        # 'score': score.item(),
+        'contour': contour.astype(int).tolist() #(cv2.convexHull(contour).astype(int).tolist())
     } }
 
 if __name__ == '__main__':

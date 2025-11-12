@@ -4,8 +4,8 @@ import BoxResizer from './BoxResizer'
 
 const fetcher = (...args) => fetch(...args).then(res => res.json())
 
-function useGrains ({ page, site, species }) {
-  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&site_id=${site}&species_id=${species}`, fetcher)
+function useGrains ({ page, site, species, upload }) {
+  const { data, error, isLoading, mutate } = useSWR(`/grains.json?page=${page}&upload_id=${upload}&site_id=${site}&species_id=${species}`, fetcher)
 
   return {
     grains: data,
@@ -30,6 +30,16 @@ function useSpecies () {
 
   return {
     sites: data,
+    isLoading,
+    isError: error
+  }
+}
+
+function useUploads () {
+  const { data, error, isLoading } = useSWR('/uploads.json', fetcher)
+
+  return {
+    uploads: data,
     isLoading,
     isError: error
   }
@@ -73,6 +83,25 @@ function SpeciesFilter ({ species, setSpecies }) {
   )
 }
 
+function UploadsFilter ({ upload, setUpload }) {
+  const { uploads, isLoading, isError } = useUploads()
+
+  if (isError) return <div>failed to load</div>
+  if (isLoading) return <div>loading...</div>
+
+  return (
+    <div className='form-group select required seach_update_load'>
+      <label className='select required' htmlFor='seach_update_load'>Uploads</label>
+      <select value={upload} onChange={(evt) => setUpload(evt.target.value)} className='form-control select required' name='search[upload_id]' id='search_upload_id'>
+        <option value={undefined} label='' />
+        {uploads.map(upload => (
+          <option key={upload.id} value={upload.id} label={upload.name} />
+        ))}
+      </select>
+    </div>
+  )
+}
+
 function GrainListView ({ grains, selected, setSelected }) {
   return (
     <ul className='list-group'>
@@ -102,7 +131,7 @@ function Pagination ({ page, setPage, pagination }) {
         {pages.map(currentPage => (
           <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' onClick={() => setPage(currentPage)} href='#'>{currentPage}</a></li>
         ))}
-        <li className='page-item'><a className='page-link' href='#' onClick={(evt) => { evt.preventDefault(); setPage(page + 1)} }>Next</a></li>
+        <li className='page-item'><a className='page-link' href='#' onClick={(evt) => { evt.preventDefault(); setPage(page + 1) }}>Next</a></li>
       </ul>
     </nav>
   )
@@ -149,7 +178,7 @@ function ViewTabs ({ grain, onUpdateGrains }) {
   // ventral: length/width
 }
 
-export default function GrainList ({export_grains_path, export_outlines_grains_path}) {
+export default function GrainList ({ export_grains_path, export_outlines_grains_path }) {
   const urlParams = new URL(document.location.toString()).searchParams
   const urlSiteId = urlParams.get('site_id')
 
@@ -157,7 +186,9 @@ export default function GrainList ({export_grains_path, export_outlines_grains_p
   const [selected, setSelected] = React.useState(null)
   const [site, setSite] = React.useState(urlSiteId)
   const [species, setSpecies] = React.useState(undefined)
-  const { grains, isLoading, isError, mutate } = useGrains({ page, site, species })
+  const [upload, setUpload] = React.useState(null)
+
+  const { grains, isLoading, isError, mutate } = useGrains({ page, site, species, upload })
 
   React.useEffect(() => {
     if (grains !== undefined && selected === null && grains.grains.length > 0) {
@@ -177,12 +208,13 @@ export default function GrainList ({export_grains_path, export_outlines_grains_p
   return (
     <div className='row'>
       <div className='col-md-12'>
-        <a className="btn btn-success mb-4 me-3" href={export_grains_path + `?site_id=${site}&species_id=${species}`}>Export Data</a>
-        <a className="btn btn-success mb-4" href={export_outlines_grains_path + `?site_id=${site}&species_id=${species}`}>Export Outlines</a>
+        <a className='btn btn-success mb-4 me-3' href={export_grains_path + `?site_id=${site}&species_id=${species}`}>Export Measurements</a>
+        <a className='btn btn-success mb-4' href={export_outlines_grains_path + `?site_id=${site}&species_id=${species}`}>Export Outlines</a>
       </div>
       <div className='col-md-12 mb-2'>
         <GrainFilter site={site} setSite={setSite} />
         <SpeciesFilter species={species} setSpecies={setSpecies} />
+        <UploadsFilter upload={upload} setUpload={setUpload} />
       </div>
 
       <div className='col-md-3'>

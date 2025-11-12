@@ -133,6 +133,10 @@ class GrainsController < AuthorizedController
       @grains = @grains.where(site_id: params[:site_id])
     end
 
+    if params[:upload_id].present? && params[:upload_id] != "undefined" && params[:upload_id] != "null"
+      @grains = @grains.where(upload_id: params[:upload_id])
+    end
+
     if params[:species_id].present? && params[:species_id] != "undefined"
       @grains = @grains.where(strain_id: params[:species_id])
     end

@@ -1,4 +1,4 @@
-<h1>Publications</h1>
+<h1>Datasets</h1>
 
 <table class='table'>
   <thead>
@@ -29,7 +29,8 @@
           <%= publication.strain&.name %>
         </td>
         <td>
-          <%= link_to 'Edit', edit_upload_path(publication) %>
+          <%= link_to "Edit", edit_upload_path(publication) %> |
+          <%= link_to "Delete", publication, method: :delete %>
         </td>
       </tr>
     <% end %>

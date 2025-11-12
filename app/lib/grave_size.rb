@@ -44,7 +44,7 @@ class GraveSize
     if figure.manual_bounding_box
       manual_stats(figure, image)
     elsif figure.contour.present?
-    else
+    elsif !figure.is_a?(GrainFigure)
       contour_stats(figure, image)
     end
   end
@@ -65,7 +65,6 @@ class GraveSize
     arc = MinOpenCV.arcLength(figure.contour)
     area = MinOpenCV.contourArea(figure.contour)
     rect = MinOpenCV.minAreaRect(figure.contour)
-    ap rect
     {perimeter: arc, area: area, width: rect[:width], height: rect[:height], angle: rect[:angle]}
   end
 
@@ -73,7 +72,6 @@ class GraveSize
     image = MinOpenCV.extractFigure(figure, image)
     contours = MinOpenCV.findContours(image, "tree")
     contour = contours.max_by { MinOpenCV.contourArea _1 }
-    ap contour
     if contour.nil? || contour.empty?
       {contour: [], perimeter: 0, area: 0, width: 0, height: 0, angle: 0}
     else
