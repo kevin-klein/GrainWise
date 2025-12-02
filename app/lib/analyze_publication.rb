@@ -48,9 +48,6 @@ class AnalyzePublication
       lateral = image_data[:lateral]
       ts = image_data[:ts]
 
-      # ------------------------------------------------------------------
-      # All image analyses – guard with `present?`
-      # ------------------------------------------------------------------
       dorsal_figures, dorsal_grain = AnalyzeImage.new.run(upload, image_name, dorsal, :dorsal) if dorsal.present?
       ventral_figures, ventral_grain = AnalyzeImage.new.run(upload, image_name, ventral, :ventral) if ventral.present?
       lateral_figures, lateral_grain = AnalyzeImage.new.run(upload, image_name, lateral, :lateral) if lateral.present?
@@ -72,9 +69,6 @@ class AnalyzePublication
       )
     end
 
-    # --------------------------------------------------------------------
-    # Final calculations wrapped in a single transaction
-    # --------------------------------------------------------------------
     Upload.transaction do
       upload.reload
       AssignGrainScales.new.run(upload.figures)

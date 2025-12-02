@@ -2,3 +2,5 @@ REDIS_URL=redis://redis:6379/0
 REDIS_MESSAGEBUS_URL=redis://redis:6379/13
 ML_SERVICE_URL=http://ml-services:9001
 RAILS_SERVE_STATIC_FILES=true
+SAM_CHECKPOINT=models/slim_sam_finetuned/checkpoint-epoch100
+# SAM_CHECKPOINT=nielsr/slimsam-50-uniform

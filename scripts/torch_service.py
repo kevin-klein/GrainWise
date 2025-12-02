@@ -28,7 +28,9 @@ device = infer_device()
 # sam.to(device=device)
 # sam.eval()
 
-sam_checkpoint = "models/slim_sam_finetuned/checkpoint-epoch25"
+# sam_checkpoint = "models/slim_sam_finetuned/checkpoint-epoch100"
+# sam_checkpoint = "nielsr/slimsam-50-uniform"
+sam_checkpoint = os.environ["SAM_CHECKPOINT"]
 
 sam = SamModel.from_pretrained(sam_checkpoint)
 processor = SamProcessor.from_pretrained(sam_checkpoint)
@@ -36,16 +38,16 @@ processor = SamProcessor.from_pretrained(sam_checkpoint)
 labels = torch.load('models/rcnn_labels.model', weights_only=True)
 labels = {v: k for k, v in labels.items()}
 
-# if torch.cuda.is_available():
-#     device = torch.device('cuda')
-# else:
-#     device = torch.device('cpu')
-# device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
+device = torch.device('cpu')
 
-# loaded_model = get_model(num_classes = len(labels.keys()), device=device)
+loaded_model = get_model(num_classes = len(labels.keys()), device=device)
 # loaded_model.load_state_dict(torch.load('models/retinanet_v2_dfg.model', map_location=device))
-# loaded_model.eval()
-# loaded_model.to(device)
+loaded_model.eval()
+loaded_model.to(device)
 
 app = Bottle()
 
@@ -73,7 +75,6 @@ def analyze_file(file):
                     'label': label
                 })
     del img
-    print(result)
     return result
 
 @app.post('/')
@@ -111,26 +112,14 @@ def upload_grain_for_segmentation():
 
     height, width = pil_image.size
 
-    # predictor = SamPredictor(sam)
-    # predictor.set_image(open_cv_image)
-
     if 'control_points' in request.POST:
         points = json.loads(request.POST['control_points'])
         input_point = [points]
-        # input_label = np.array([1] * len(points))
     else:
         input_point = [[[width / 2, height / 2]]]
-        # input_label = np.array([1])
-
-    print(input_point)
 
     inputs = processor(images=pil_image, input_points=input_point, return_tensors="pt")
 
-    # masks, scores, logits = predictor.predict(
-    #     point_coords=input_point,
-    #     point_labels=input_label,
-    #     multimask_output=False
-    # )
     outputs = sam(**inputs, multimask_output=False)
 
     masks = processor.post_process_masks(

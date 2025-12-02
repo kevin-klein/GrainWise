@@ -1,7 +1,5 @@
 # train_sam.py
 import os
-import random
-import math
 from glob import glob
 from tqdm.auto import tqdm
 
@@ -171,7 +169,8 @@ def train(
     print("Using device:", device)
 
     # Load model + processor
-    model_name = "nielsr/slimsam-50-uniform"
+    # model_name = "nielsr/slimsam-50-uniform"
+    model_name = "models/slim_sam_finetuned/checkpoint-epoch100"
     processor = SamProcessor.from_pretrained(model_name)
     model = SamModel.from_pretrained(model_name)
     model.to(device)
@@ -332,4 +331,4 @@ if __name__ == "__main__":
         resize_to=tuple(args.resize),
     )
 
-# poetry run python scripts/train_msam.py --image_dir training_data/grain_masks/images/ --mask_dir training_data/grain_masks/masks/ --output_dir models/slim_sam_finetuned --epochs 25 --batch_size 2
+# poetry run python scripts/train_msam.py --image_dir training_data/grain_masks/images/ --mask_dir training_data/grain_masks/masks/ --output_dir models/slim_sam_finetuned --epochs 100 --batch_size 2

@@ -212,9 +212,9 @@ export default function GrainList ({ export_grains_path, export_outlines_grains_
         <a className='btn btn-success mb-4' href={export_outlines_grains_path + `?site_id=${site}&species_id=${species}`}>Export Outlines</a>
       </div>
       <div className='col-md-12 mb-2'>
-        <GrainFilter site={site} setSite={setSite} />
-        <SpeciesFilter species={species} setSpecies={setSpecies} />
-        <UploadsFilter upload={upload} setUpload={setUpload} />
+        <GrainFilter site={site} setSite={(site) => { setSite(site); setPage(1) }} />
+        <SpeciesFilter species={species} setSpecies={(species) => { setSpecies(species); setPage(1) }} />
+        <UploadsFilter upload={upload} setUpload={(upload) => { setUpload(upload); setPage(1) }} />
       </div>
 
       <div className='col-md-3'>
