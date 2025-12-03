@@ -2,9 +2,9 @@ import React from 'react'
 import { Wizard, useWizard } from 'react-use-wizard'
 import Select from 'react-select'
 import { useFigureStore } from './store'
-import { Group, Stage, Layer, Circle, Image, Rect, Line, Transformer, Arrow, Shape } from 'react-konva'
+import { Group, Stage, Layer, Circle, Image, Rect, Line, Transformer, RegularPolygon } from 'react-konva'
 import useImage from 'use-image'
-import ManualContour, { calculateControlPoints } from './ManualContour'
+import ManualContour from './ManualContour'
 
 function rotatePoint (x, y, figure) {
   const centerX = (figure.x2 + figure.x1) / 2
@@ -47,7 +47,7 @@ export function Box ({ onChangeFigure, onDraggingStart, active, figure, setActiv
       <Line
         points={figure.contour?.map(([x, y]) => [figure.x1 + x, figure.y1 + y]).flat()}
         closed
-        fill='red'
+        // fill='none'
         stroke='transparent'
       />
 
@@ -84,7 +84,7 @@ export function Box ({ onChangeFigure, onDraggingStart, active, figure, setActiv
         }}
       />
 
-      {isSelected && typeName !== 'Spine' && (
+      {isSelected && (
         <Transformer
           ref={trRef}
           rotateEnabled={false}
