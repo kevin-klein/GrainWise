@@ -114,6 +114,9 @@ gem "dotenv-rails", "~> 2.8"
 gem "pkg-config"
 gem "minopencv", github: "kevin-klein/ruby-minopencv"
 
+gem 'caxlsx'
+gem 'caxlsx_rails'
+
 gem "shakapacker"
 
 gem "rwordnet", "~> 2.0"

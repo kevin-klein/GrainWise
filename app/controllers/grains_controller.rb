@@ -23,7 +23,12 @@ class GrainsController < AuthorizedController
   def export
     table = TableBuilder.new.build(@grains)
 
-    send_data table, filename: "grains.csv"
+    p = Axlsx::Package.new
+    p.workbook.add_worksheet(name: "Grains") do |sheet|
+      table.each { |row| sheet.add_row row }
+    end
+
+    send_data p.to_stream.read, :filename => 'grains.xlsx', :type => "application/vnd.openxmlformates-officedocument.spreadsheetml.sheet"
   end
 
   def orientations
