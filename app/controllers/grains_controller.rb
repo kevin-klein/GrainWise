@@ -14,7 +14,19 @@ class GrainsController < AuthorizedController
 
       figures.each do |figure|
         contour = figure.contour.chunk_while { |a, b| a == b }.map(&:first)
-        csv << ["#{figure.grain.identifier} - #{figure.view}", contour].flatten
+
+        # Resample the contour to have exactly 100 points
+        total_length = contour.size
+        resampled_contour = []
+
+        if total_length > 0
+          step = total_length.to_f / 100
+          (0..99).each do |i|
+            index = i * step
+            resampled_contour << contour[index.round]
+          end
+        end
+        csv << ["#{figure.grain.identifier} - #{figure.view}", resampled_contour].flatten
       end
     end
     send_data csv_data, filename: "outlines.csv"
