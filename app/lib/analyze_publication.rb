@@ -53,10 +53,10 @@ class AnalyzePublication
       lateral_figures, lateral_grain = AnalyzeImage.new.run(upload, image_name, lateral, :lateral) if lateral.present?
       ts_figures, ts_grain = AnalyzeImage.new.run(upload, image_name, lateral, :ts) if ts.present?
 
-      figures.concat([ventral_figures, ventral_grain].compact.flatten) if ventral_figures.present?
-      figures.concat([dorsal_figures, dorsal_grain].compact.flatten) if dorsal_figures.present?
-      figures.concat([lateral_figures, lateral_grain].compact.flatten) if lateral_figures.present?
-      figures.concat([ts_figures, ts_grain].compact.flatten) if ts_figures.present?
+      figures.concat([ventral_figures, ventral_grain].compact.flatten) if ventral.present?
+      figures.concat([dorsal_figures, dorsal_grain].compact.flatten) if dorsal.present?
+      figures.concat([lateral_figures, lateral_grain].compact.flatten) if lateral.present?
+      figures.concat([ts_figures, ts_grain].compact.flatten) if ts.present?
 
       Grain.create!(
         identifier: image_name,

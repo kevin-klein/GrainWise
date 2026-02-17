@@ -1,4 +1,4 @@
-class SitesController < ApplicationController
+class SitesController < AuthorizedController
   before_action :set_site, only: %i[show edit update destroy]
 
   # GET /sites or /sites.json
