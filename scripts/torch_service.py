@@ -11,7 +11,6 @@ import cv2
 import os
 import torchvision.transforms as T
 
-
 sam_checkpoint = "models/mobile_sam.pt"
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

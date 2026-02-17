@@ -11,10 +11,8 @@ default: &default
   timeout: 5000
   host: localhost
 
-  username: postgres
-  # <%= ENV['PG_USER'] %>
-  password: root110120
-  # <%= ENV['PG_PASS'] %>
+  username: <%= ENV['PG_USER'] %>
+  password: <%= ENV['PG_PASS'] %>
   host: localhost
 
 development:
@@ -40,4 +38,4 @@ test:
 production:
   <<: *default
   host: db
-  database: postgres
+  database: grainwise_production
