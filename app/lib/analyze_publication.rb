@@ -8,13 +8,12 @@ class AnalyzePublication
 
     perform_work(upload)
   rescue => e
-    # 1️⃣  Notify the user
     MessageBus.publish(
       "/importprogress",
       {error: e.message, backtrace: e.backtrace}
     )
 
-    # 2️⃣  Re‑raise so Sidekiq (or whatever) can retry / log it
+    # Re‑raise so Sidekiq (or whatever) can retry / log it
     raise
   end
 
@@ -37,6 +36,10 @@ class AnalyzePublication
 
         images[clean_name(entry.name)] ||= {ventral: nil, dorsal: nil, lateral: nil}
         images[clean_name(entry.name)][view_type(entry.name)] = entry.get_input_stream.read
+
+        if ![:dorsal, :ventral, :lateral, :ts].include?(view_type(entry.name))
+          raise ArgumentError.new("invalid entry #{entry.name} at #{filepath}, view type #{view_type(entry.name)} is invalid!")
+        end
       end
     end
 
@@ -57,6 +60,10 @@ class AnalyzePublication
       figures.concat([dorsal_figures, dorsal_grain].compact.flatten) if dorsal.present?
       figures.concat([lateral_figures, lateral_grain].compact.flatten) if lateral.present?
       figures.concat([ts_figures, ts_grain].compact.flatten) if ts.present?
+
+      if dorsal_grain.nil? && ventral_grain.nil? && lateral_grain.nil?
+        raise ArgumentError.new("No views for grain #{image_name} were found.")
+      end
 
       Grain.create!(
         identifier: image_name,
@@ -84,7 +91,7 @@ class AnalyzePublication
   # Helpers – unchanged
   # --------------------------------------------------------------------
   def view_type(file_name)
-    file_name.split("/").first.to_sym
+    file_name.split("/").first.downcase.to_sym
   end
 
   def clean_name(file_name)
