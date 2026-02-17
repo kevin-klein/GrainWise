@@ -107,9 +107,9 @@ function GrainListView ({ grains, selected, setSelected }) {
     <ul className='list-group'>
       {grains.map(grain => {
         return (
-          <a href='#' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelected(grain.id) }} className={`list-group-item list-group-item-action ${selected === grain.id ? 'active' : ''}`} key={grain.id}>
+          <button onClick={(e) => { setSelected(grain.id) }} className={`list-group-item list-group-item-action ${selected === grain.id ? 'active' : ''}`} key={grain.id}>
             {grain.id} - {grain.identifier}
-          </a>
+          </button>
         )
       }
       )}
