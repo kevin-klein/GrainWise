@@ -92,6 +92,7 @@ def save_masks_as_images(masks, output_dir="masks_out"):
 @app.post('/segment')
 def upload_grain_for_segmentation():
     upload_file = request.POST['image']
+
     request_object_content = upload_file.file.read()
     pil_image = Image.open(io.BytesIO(request_object_content))
     open_cv_image = np.array(pil_image)
@@ -101,8 +102,13 @@ def upload_grain_for_segmentation():
     predictor = SamPredictor(sam)
     predictor.set_image(open_cv_image)
 
-    input_point = np.array([[width / 2, height / 2]])
-    input_label = np.array([1])
+    if 'control_points' in request.POST:
+        points = json.loads(request.POST['control_points'])
+        input_point = np.array(points)
+        input_label = np.array([1] * len(points))
+    else:
+        input_point = np.array([[width / 2, height / 2]])
+        input_label = np.array([1])
 
     masks, scores, logits = predictor.predict(
         point_coords=input_point,
