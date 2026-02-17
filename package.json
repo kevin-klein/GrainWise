@@ -45,7 +45,7 @@
     "react-use-wizard": "^2.2.1",
     "sass": "^1.57.1",
     "sass-loader": "^13.2.0",
-    "shakapacker": "7.2.2",
+    "shakapacker": "9.5.0",
     "style-loader": "^3.3.1",
     "swr": "^2.3.3",
     "terser-webpack-plugin": "5",
@@ -53,7 +53,7 @@
     "webpack": "5",
     "webpack-assets-manifest": "5",
     "webpack-cli": "4",
-    "webpack-dev-server": "4",
+    "webpack-dev-server": "5",
     "webpack-merge": "5",
     "yarn": "^1.22.22",
     "zustand": "^4.3.9"
