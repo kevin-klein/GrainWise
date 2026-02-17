@@ -484,15 +484,14 @@ export default function BoxResizer ({ onUpdateGrains, grain, scale, sites, image
                       </label>
                     </div>
                   </div>
-                  <a
-                    href='#'
-                    onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
+                  <button
+                    onClick={(evt) => { createNewFigure() }}
                     className={`list-group-item list-group-item-action d-flex justify-content-between align-items-start ${currentScale !== undefined ? 'disabled' : ''}`}
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>New Figure</div>
                     </div>
-                  </a>
+                  </button>
                 </ul>
               </div>
               <input value='Save' onClick={(evt) => { evt.preventDefault(); onUpdateFigure() }} type='submit' className='btn btn-primary card-link mt-1' />

@@ -323,15 +323,14 @@ export default function AddFigure ({ image, pageFigures, page, next_url }) {
                     </React.Fragment>
                   )}
 
-                  <a
-                    href='#'
-                    onClick={(evt) => { evt.preventDefault(); createNewFigure() }}
+                  <button
+                    onClick={(evt) => { createNewFigure() }}
                     className='list-group-item list-group-item-action d-flex justify-content-between align-items-start'
                   >
                     <div className='ms-2 me-auto'>
                       <div className='fw-bold'>New Figure</div>
                     </div>
-                  </a>
+                  </button>
                 </ul>
               </div>
               <form action={next_url} method='post'>

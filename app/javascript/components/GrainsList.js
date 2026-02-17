@@ -127,11 +127,23 @@ function Pagination ({ page, setPage, pagination }) {
   return (
     <nav aria-label='Page navigation example'>
       <ul className='pagination'>
-        <li className='page-item'><a className='page-link' href='#'>Previous</a></li>
+        <li className='page-item'>
+          <button className='page-link'>
+            Previous
+          </button>
+        </li>
         {pages.map(currentPage => (
-          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}><a className='page-link' onClick={() => setPage(currentPage)} href='#'>{currentPage}</a></li>
+          <li className={`page-item ${page === currentPage ? 'active' : ''}`} key={currentPage}>
+            <button className='page-link' onClick={() => setPage(currentPage)}>
+              {currentPage}
+            </button>
+          </li>
         ))}
-        <li className='page-item'><a className='page-link' href='#' onClick={(evt) => { evt.preventDefault(); setPage(page + 1) }}>Next</a></li>
+        <li className='page-item'>
+          <button className='page-link' onClick={(evt) => { evt.preventDefault(); setPage(page + 1) }}>
+            Next
+          </button>
+        </li>
       </ul>
     </nav>
   )
