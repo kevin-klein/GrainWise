@@ -15,7 +15,7 @@
 class Upload < ApplicationRecord
   has_many :upload_items, dependent: :destroy
   has_many :figures, through: :upload_items
-  has_many :grains
+  has_many :grains, dependent: :destroy
 
   belongs_to :site
   belongs_to :strain
