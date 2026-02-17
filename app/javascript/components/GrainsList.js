@@ -107,7 +107,7 @@ function GrainListView ({ grains, selected, setSelected }) {
     <ul className='list-group'>
       {grains.map(grain => {
         return (
-          <a href='#' onClick={(e) => { e.stopPropagation(); setSelected(grain.id) }} className={`list-group-item list-group-item-action ${selected === grain.id ? 'active' : ''}`} key={grain.id}>
+          <a href='#' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelected(grain.id) }} className={`list-group-item list-group-item-action ${selected === grain.id ? 'active' : ''}`} key={grain.id}>
             {grain.id} - {grain.identifier}
           </a>
         )
@@ -156,16 +156,16 @@ function ViewTabs ({ grain, onUpdateGrains }) {
     <div>
       <ul className='nav nav-tabs'>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.dorsal === undefined ? 'disabled' : ''} ${view === 'dorsal' ? 'active' : ''}`} onClick={(evt) => { evt.stopPropagation(); setView('dorsal') }} href='#'>Dorsal</a>
+          <a className={`nav-link ${grain.dorsal === undefined ? 'disabled' : ''} ${view === 'dorsal' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('dorsal') }} href='#'>Dorsal</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.lateral === undefined ? 'disabled' : ''} ${view === 'lateral' ? 'active' : ''}`} onClick={(evt) => { evt.stopPropagation(); setView('lateral') }} aria-current='page' href='#'>Lateral</a>
+          <a className={`nav-link ${grain.lateral === undefined ? 'disabled' : ''} ${view === 'lateral' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('lateral') }} aria-current='page' href='#'>Lateral</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={(evt) => { evt.stopPropagation(); setView('ventral') }} aria-current='page' href='#'>Ventral</a>
+          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('ventral') }} aria-current='page' href='#'>Ventral</a>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={(evt) => { evt.stopPropagation(); setView('ts') }} aria-current='page' href='#'>T.S.</a>
+          <a className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('ts') }} aria-current='page' href='#'>T.S.</a>
         </li>
       </ul>
 
