@@ -1,4 +1,4 @@
-class PagesController < ApplicationController
+class PagesController < AuthorizedController
   before_action :set_publication
   before_action :set_page, only: %i[show edit update destroy]
 

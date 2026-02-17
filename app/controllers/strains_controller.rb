@@ -1,4 +1,4 @@
-class StrainsController < ApplicationController
+class StrainsController < AuthorizedController
   before_action :set_strain, only: %i[show edit update destroy]
 
   # GET /strains or /strains.json

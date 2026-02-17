@@ -1,4 +1,4 @@
-class GeneticsController < ApplicationController
+class GeneticsController < AuthorizedController
   before_action :set_genetic, only: %i[show edit update destroy]
 
   # GET /genetics or /genetics.json

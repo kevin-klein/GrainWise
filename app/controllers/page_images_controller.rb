@@ -1,4 +1,4 @@
-class PageImagesController < ApplicationController
+class PageImagesController < AuthorizedController
   # GET /page_images or /page_images.json
   def index
     @page_images = PageImage.all
