@@ -156,16 +156,16 @@ function ViewTabs ({ grain, onUpdateGrains }) {
     <div>
       <ul className='nav nav-tabs'>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.dorsal === undefined ? 'disabled' : ''} ${view === 'dorsal' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('dorsal') }} href='#'>Dorsal</a>
+          <button className={`nav-link ${grain.dorsal === undefined ? 'disabled' : ''} ${view === 'dorsal' ? 'active' : ''}`} onClick={(evt) => { setView('dorsal') }}>Dorsal</button>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.lateral === undefined ? 'disabled' : ''} ${view === 'lateral' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('lateral') }} aria-current='page' href='#'>Lateral</a>
+          <button className={`nav-link ${grain.lateral === undefined ? 'disabled' : ''} ${view === 'lateral' ? 'active' : ''}`} onClick={(evt) => { setView('lateral') }} aria-current='page'>Lateral</button>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('ventral') }} aria-current='page' href='#'>Ventral</a>
+          <button className={`nav-link ${grain.ventral === undefined ? 'disabled' : ''} ${view === 'ventral' ? 'active' : ''}`} onClick={(evt) => { setView('ventral') }} aria-current='page'>Ventral</button>
         </li>
         <li className='nav-item'>
-          <a className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={(evt) => { evt.preventDefault(); evt.stopPropagation(); setView('ts') }} aria-current='page' href='#'>T.S.</a>
+          <button className={`nav-link ${grain.ts === undefined ? 'disabled' : ''} ${view === 'TS' ? 'active' : ''}`} onClick={(evt) => { setView('ts') }} aria-current='page'>T.S.</button>
         </li>
       </ul>
 
