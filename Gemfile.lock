@@ -188,6 +188,8 @@ GEM
     jbuilder (2.14.1)
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
+    jsbundling-rails (1.3.1)
+      railties (>= 6.0.0)
     json (2.10.2)
     kramdown (2.5.1)
       rexml (>= 3.3.9)
@@ -237,7 +239,6 @@ GEM
     numo-narray (0.9.2.1)
     observer (0.1.2)
     ostruct (0.6.1)
-    package_json (0.1.0)
     pagy (9.3.4)
     parallel (1.27.0)
     parser (3.3.8.0)
@@ -256,6 +257,10 @@ GEM
     prettier_print (1.2.1)
     prettyprint (0.2.0)
     prism (1.4.0)
+    propshaft (1.3.1)
+      actionpack (>= 7.0.0)
+      activesupport (>= 7.0.0)
+      rack
     psych (5.2.3)
       date
       stringio
@@ -264,8 +269,6 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (2.2.22)
-    rack-proxy (0.7.7)
-      rack
     rack-session (1.0.2)
       rack (< 3)
     rack-test (2.2.0)
@@ -462,13 +465,6 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
-    semantic_range (3.1.0)
-    shakapacker (9.5.0)
-      activesupport (>= 5.2)
-      package_json
-      rack-proxy (>= 0.6.1)
-      railties (>= 5.2)
-      semantic_range (>= 2.3.0)
     sidekiq (6.5.12)
       connection_pool (>= 2.2.5, < 3)
       rack (~> 2.0)
@@ -589,6 +585,7 @@ DEPENDENCIES
   http-form_data
   importmap-rails
   jbuilder
+  jsbundling-rails (~> 1.3)
   matrix
   message_bus
   mina
@@ -600,6 +597,7 @@ DEPENDENCIES
   pdf-reader
   pg
   pkg-config
+  propshaft (~> 1.3)
   puma (~> 5.0)
   rails (~> 7.1)
   rails-erd
@@ -615,7 +613,6 @@ DEPENDENCIES
   rumale
   rwordnet (~> 2.0)
   selenium-webdriver
-  shakapacker
   sidekiq (~> 6.5)
   simple_form
   solargraph

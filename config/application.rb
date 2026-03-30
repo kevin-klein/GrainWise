@@ -29,6 +29,8 @@ module Dfgrb
       open_timeout: 5,
       read_timeout: 5
     }
+
+    config.active_job.queue_adapter = :sidekiq
   end
 end
 

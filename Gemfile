@@ -55,7 +55,7 @@ gem "jbuilder"
 gem "redis", "~> 4.0"
 
 gem "react_on_rails"
-gem "rubyzip", require: 'zip'
+gem "rubyzip", require: "zip"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem 'kredis'
@@ -114,10 +114,8 @@ gem "dotenv-rails", "~> 2.8"
 gem "pkg-config"
 gem "minopencv", github: "kevin-klein/ruby-minopencv"
 
-gem 'caxlsx'
-gem 'caxlsx_rails'
-
-gem "shakapacker"
+gem "caxlsx"
+gem "caxlsx_rails"
 
 gem "rwordnet", "~> 2.0"
 
@@ -130,3 +128,7 @@ gem "view_component", "~> 2.82"
 gem "ruby-progressbar", "~> 1.13"
 
 gem "erb-formatter", "~> 0.4.2"
+
+gem "jsbundling-rails", "~> 1.3"
+
+gem "propshaft", "~> 1.3"

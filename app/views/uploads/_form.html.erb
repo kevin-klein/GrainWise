@@ -1,15 +1,20 @@
 <div class='container'>
-  <%= simple_form_for(upload) do |f| %>
+  <%= simple_form_for(upload, html: { multipart: true, id: 'upload_form' }) do |f| %>
+    <!-- Drag and Drop Zone for the File -->
+    <div class="file-upload-zone">
+      <%= f.input :zip, as: :file, input_html: { class: 'file-input', style: 'display:none;', id: 'upload_zip' } %>
+      <label for="upload_zip" class="dropzone">
+        <p>Drag and drop your file here, or click to select it</p>
+      </label>
+    </div>
 
-    <% unless upload.persisted? %>
-      <!-- Drag and Drop Zone for the File -->
-      <div class="file-upload-zone">
-        <%= f.input :zip, as: :file, input_html: { class: 'file-input', style: 'display:none;' } %>
-        <label for="upload_zip" class="dropzone">
-          <p>Drag and drop your file here, or click to select it</p>
-        </label>
+    <!-- Progress Bar -->
+    <div class="progress-container" style="display: none; margin-top: 1rem;">
+      <div class="progress" role="progressbar">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" id="upload-progress" style="width: 0%">0%</div>
       </div>
-    <% end %>
+      <small class="text-muted" id="upload-status">Preparing upload...</small>
+    </div>
 
     <%= f.input :name, required: true %>
 
@@ -30,7 +35,86 @@
     <%= f.input :scale_pixels, label: 'Scale Length in Pixels' %>
     <%= f.input :scale_mm_distance, hint: '1mm = 1000 micrometers', label: 'Scale length in mm', wrapper_html: { class: 'mb-2' } %>
 
-    <%= f.submit(class: "btn btn-primary") %>
+    <%= f.submit(class: "btn btn-primary", id: "submit-upload") %>
 
   <% end %>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('upload_form');
+    const fileInput = document.getElementById('upload_zip');
+    const progressBar = document.getElementById('upload-progress');
+    const progressContainer = document.querySelector('.progress-container');
+    const statusText = document.getElementById('upload-status');
+    const submitBtn = document.getElementById('submit-upload');
+
+    if (!form || !fileInput) return;
+
+    // Show progress bar when file is selected
+    fileInput.addEventListener('change', function() {
+      if (this.files.length > 0) {
+        progressContainer.style.display = 'block';
+        statusText.textContent = 'Ready to upload';
+      }
+    });
+
+    // Handle form submission with progress tracking
+    form.addEventListener('submit', function(e) {
+      const xhr = new XMLHttpRequest();
+      const formData = new FormData(form);
+
+      xhr.upload.addEventListener('progress', function(event) {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          progressBar.style.width = percentComplete + '%';
+          progressBar.textContent = percentComplete + '%';
+          statusText.textContent = `Uploading: ${percentComplete}%`;
+        }
+      });
+
+      xhr.upload.addEventListener('load', function(event) {
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        statusText.textContent = 'Upload complete!';
+      });
+
+      xhr.upload.addEventListener('error', function() {
+        statusText.textContent = 'Upload failed. Please try again.';
+        progressBar.classList.remove('progress-bar-success');
+        progressBar.classList.add('progress-bar-danger');
+      });
+
+      // Disable submit button during upload
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+
+      // Send the form data via AJAX
+      xhr.open('POST', form.action, true);
+      xhr.send(formData);
+
+      // Prevent default form submission
+      e.preventDefault();
+    });
+
+    // Handle successful AJAX response
+    form.addEventListener('ajax:success', function(e, data, status, xhr) {
+      // Redirect on success or show success message
+      progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+      progressBar.classList.add('progress-bar-success');
+      statusText.textContent = 'Upload successful!';
+      setTimeout(() => {
+        window.location.href = '/uploads'; // Adjust as needed
+      }, 1000);
+    });
+
+    // Handle AJAX errors
+    form.addEventListener('ajax:error', function(e, xhr, status, error) {
+      statusText.textContent = 'Upload failed: ' + error;
+      progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+      progressBar.classList.add('progress-bar-danger');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
+    });
+  });
+</script>
