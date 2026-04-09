@@ -166,3 +166,44 @@ document.querySelector('.dropzone')?.addEventListener('drop', function (event) {
     }
   }
 })
+
+// Dropdown toggle functionality (no Bootstrap dependency)
+document.addEventListener('DOMContentLoaded', function() {
+  const dropdownToggles = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+  
+  dropdownToggles.forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const dropdownMenu = this.nextElementSibling;
+      if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+        // Toggle the show class
+        const isVisible = dropdownMenu.classList.contains('show');
+        
+        // Hide all other dropdowns
+        document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+          if (menu !== dropdownMenu) {
+            menu.classList.remove('show');
+          }
+        });
+        
+        // Toggle current dropdown
+        if (isVisible) {
+          dropdownMenu.classList.remove('show');
+        } else {
+          dropdownMenu.classList.add('show');
+        }
+      }
+    });
+  });
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+      document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+        menu.classList.remove('show');
+      });
+    }
+  });
+});
