@@ -61,9 +61,24 @@
 
     // Handle form submission with progress tracking
     form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
       const xhr = new XMLHttpRequest();
       const formData = new FormData(form);
 
+      // Show progress bar
+      progressBar.style.display = 'block';
+      progressBar.classList.remove('progress-bar-success', 'progress-bar-danger');
+      progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
+      progressBar.style.width = '0%';
+      progressBar.textContent = 'Uploading...';
+      statusText.textContent = 'Uploading...';
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+
+      // Track upload progress
       xhr.upload.addEventListener('progress', function(event) {
         if (event.lengthComputable) {
           const percentComplete = Math.round((event.loaded / event.total) * 100);
@@ -73,48 +88,39 @@
         }
       });
 
-      xhr.upload.addEventListener('load', function(event) {
-        progressBar.style.width = '100%';
-        progressBar.textContent = '100%';
-        statusText.textContent = 'Upload complete!';
+      // Handle successful response
+      xhr.addEventListener('load', function(event) {
+        // Check if server sent a redirect (3xx)
+        if (xhr.status >= 300 && xhr.status < 400 && xhr.getResponseHeader('Location')) {
+          // Follow the redirect
+          window.location.href = xhr.getResponseHeader('Location');
+          return;
+        }
+
+        console.log(event)
+        console.log(xhr)
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+          progressBar.classList.add('progress-bar-success');
+          statusText.textContent = 'Upload complete!';
+
+          window.location.href = xhr.responseURL;
+        }
       });
 
-      xhr.upload.addEventListener('error', function() {
+      // Handle errors
+      xhr.addEventListener('error', function() {
         statusText.textContent = 'Upload failed. Please try again.';
-        progressBar.classList.remove('progress-bar-success');
+        progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
         progressBar.classList.add('progress-bar-danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
       });
 
-      // Disable submit button during upload
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Uploading...';
-
-      // Send the form data via AJAX
+      // Send the form data
       xhr.open('POST', form.action, true);
       xhr.send(formData);
-
-      // Prevent default form submission
-      e.preventDefault();
-    });
-
-    // Handle successful AJAX response
-    form.addEventListener('ajax:success', function(e, data, status, xhr) {
-      // Redirect on success or show success message
-      progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
-      progressBar.classList.add('progress-bar-success');
-      statusText.textContent = 'Upload successful!';
-      setTimeout(() => {
-        window.location.href = '/uploads'; // Adjust as needed
-      }, 1000);
-    });
-
-    // Handle AJAX errors
-    form.addEventListener('ajax:error', function(e, xhr, status, error) {
-      statusText.textContent = 'Upload failed: ' + error;
-      progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
-      progressBar.classList.add('progress-bar-danger');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit';
     });
   });
 </script>
