@@ -24,6 +24,7 @@ class AnalyzePublication
       zip_file.each do |entry|
         next if entry.ftype == :directory
         next if entry.name.include?("__MACOSX")
+        next if entry.name.include?(".DS_Store")
 
         images[clean_name(entry.name)] ||= {ventral: nil, dorsal: nil, lateral: nil}
         images[clean_name(entry.name)][view_type(entry.name)] = entry.get_input_stream.read
